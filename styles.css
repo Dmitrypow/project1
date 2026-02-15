@@ -1,0 +1,67 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+}
+
+.container {
+  display: flex;
+  gap: 30px;
+}
+
+.form-section, .table-section {
+  flex: 1;
+}
+
+.field {
+  margin-bottom: 15px;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 4px;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 6px;
+}
+
+button {
+  padding: 6px 12px;
+  margin-right: 5px;
+  cursor: pointer;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 6px;
+  text-align: left;
+}
+
+th {
+  background: #f0f0f0;
+}
+
+.error {
+  color: red;
+  font-size: 12px;
+}
+
+.invalid {
+  border: 1px solid red;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+}
