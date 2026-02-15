@@ -1,166 +1,193 @@
-let state = {
-  passes: [],
-  editId: null,
-  sortAsc: true
-};
-
-const form = document.getElementById("passForm");
-const tableBody = document.getElementById("passesTableBody");
-
-const searchInput = document.getElementById("searchInput");
-const filterReason = document.getElementById("filterReason");
+let passes = [];
+let editId = null;
 
 function saveToStorage() {
-  localStorage.setItem("passes", JSON.stringify(state.passes));
+    const json = JSON.stringify(passes);
+    localStorage.setItem("lr1_passes", json);
 }
 
 function loadFromStorage() {
-  const data = localStorage.getItem("passes");
-  if (data) {
-    state.passes = JSON.parse(data);
-  }
+    const json = localStorage.getItem("lr1_passes");
+    if (json === null) {
+        return [];
+    }
+    return JSON.parse(json);
 }
 
-function validate() {
-  let valid = true;
+function readForm() {
+    const userNameValue = document.getElementById("userNameInput").value;
+    const reasonValue = document.getElementById("reasonSelect").value;
+    const validDateValue = document.getElementById("validDateInput").value;
+    const commentValue = document.getElementById("commentInput").value;
+    const issuerValue = document.getElementById("issuerInput").value;
 
-  document.querySelectorAll(".error").forEach(e => e.textContent = "");
-  document.querySelectorAll("input, select").forEach(el => el.classList.remove("invalid"));
-
-  const userName = document.getElementById("userName");
-  const reason = document.getElementById("reason");
-  const validDate = document.getElementById("validDate");
-  const issuer = document.getElementById("issuer");
-
-  if (!userName.value.trim()) {
-    setError(userName, "Обов'язкове поле");
-    valid = false;
-  }
-
-  if (!reason.value) {
-    setError(reason, "Оберіть причину");
-    valid = false;
-  }
-
-  if (!validDate.value) {
-    setError(validDate, "Оберіть дату");
-    valid = false;
-  }
-
-  if (!issuer.value.trim()) {
-    setError(issuer, "Обов'язкове поле");
-    valid = false;
-  }
-
-  return valid;
+    return {
+        userName: userNameValue,
+        reason: reasonValue,
+        validDate: validDateValue,
+        comment: commentValue,
+        issuer: issuerValue
+    };
 }
 
-function setError(input, message) {
-  input.classList.add("invalid");
-  input.nextElementSibling.textContent = message;
+function clearErrors() {
+    const inputs = document.querySelectorAll(".invalid");
+    for (const input of inputs) {
+        input.classList.remove("invalid");
+    }
+    
+    const errorTexts = document.querySelectorAll(".error-text");
+    for (const text of errorTexts) {
+        text.innerHTML = "";
+    }
 }
 
-function render() {
-  tableBody.innerHTML = "";
-
-  let filtered = [...state.passes];
-
-  if (searchInput.value) {
-    filtered = filtered.filter(p =>
-      p.userName.toLowerCase().includes(searchInput.value.toLowerCase())
-    );
-  }
-
-  if (filterReason.value) {
-    filtered = filtered.filter(p => p.reason === filterReason.value);
-  }
-
-  filtered.forEach((pass, index) => {
-    const row = document.createElement("tr");
-
-    row.innerHTML = `
-      <td>${index + 1}</td>
-      <td>${pass.userName}</td>
-      <td>${pass.reason}</td>
-      <td>${pass.validDate}</td>
-      <td>${pass.issuer}</td>
-      <td>
-        <button data-id="${pass.id}" class="edit">Редагувати</button>
-        <button data-id="${pass.id}" class="delete">Видалити</button>
-      </td>
-    `;
-
-    tableBody.appendChild(row);
-  });
+function showError(inputId, errorId, message) {
+    const input = document.getElementById(inputId);
+    const errorText = document.getElementById(errorId);
+    
+    input.classList.add("invalid");
+    errorText.innerHTML = message;
 }
 
-form.addEventListener("submit", function (e) {
-  e.preventDefault();
-  if (!validate()) return;
+function validate(dto) {
+    clearErrors();
+    let isValid = true;
 
-  const newPass = {
-    id: state.editId || Date.now(),
-    userName: userName.value,
-    reason: reason.value,
-    validDate: validDate.value,
-    comment: comment.value,
-    issuer: issuer.value
-  };
+    const user = dto.userName.trim();
+    if (user === "") {
+        showError("userNameInput", "userNameError", "Поле є обов'язковим.");
+        isValid = false;
+    } else if (user.length < 3) {
+        showError("userNameInput", "userNameError", "Довжина має бути не менше 3 символів.");
+        isValid = false;
+    }
 
-  if (state.editId) {
-    state.passes = state.passes.map(p => p.id === state.editId ? newPass : p);
-    state.editId = null;
-  } else {
-    state.passes.push(newPass);
-  }
+    if (dto.reason === "") {
+        showError("reasonSelect", "reasonError", "Оберіть значення зі списку.");
+        isValid = false;
+    }
 
-  form.reset();
-  document.getElementById("cancelEdit").style.display = "none";
-  saveToStorage();
-  render();
-});
+    if (dto.validDate === "") {
+        showError("validDateInput", "validDateError", "Вкажіть дату.");
+        isValid = false;
+    }
 
-tableBody.addEventListener("click", function (e) {
-  const id = Number(e.target.dataset.id);
+    const issuer = dto.issuer.trim();
+    if (issuer === "") {
+        showError("issuerInput", "issuerError", "Поле є обов'язковим.");
+        isValid = false;
+    }
 
-  if (e.target.classList.contains("delete")) {
-    state.passes = state.passes.filter(p => p.id !== id);
+    return isValid;
+}
+
+function renderTable() {
+    const tbody = document.getElementById("passesTableBody");
+    
+    const rowsHtml = passes.map((item, index) => {
+        return `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${item.userName}</td>
+                <td>${item.reason}</td>
+                <td>${item.validDate}</td>
+                <td>${item.comment}</td>
+                <td>${item.issuer}</td>
+                <td>
+                    <button type="button" class="edit-btn" data-id="${item.id}">Редагувати</button>
+                    <button type="button" class="delete-btn" data-id="${item.id}">Видалити</button>
+                </td>
+            </tr>
+        `;
+    }).join("");
+
+    tbody.innerHTML = rowsHtml;
+}
+
+const form = document.getElementById("passForm");
+
+form.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const dto = readForm();
+
+    const isValid = validate(dto);
+    if (!isValid) return;
+
+    if (editId === null) {
+        const newItem = {
+            id: Date.now(),
+            userName: dto.userName,
+            reason: dto.reason,
+            validDate: dto.validDate,
+            comment: dto.comment,
+            issuer: dto.issuer
+        };
+        passes.push(newItem);
+    } else {
+        for (let i = 0; i < passes.length; i++) {
+            if (passes[i].id === editId) {
+                passes[i].userName = dto.userName;
+                passes[i].reason = dto.reason;
+                passes[i].validDate = dto.validDate;
+                passes[i].comment = dto.comment;
+                passes[i].issuer = dto.issuer;
+            }
+        }
+        editId = null;
+        document.getElementById("submitBtn").innerText = "Додати";
+        document.getElementById("cancelEditBtn").style.display = "none";
+    }
+
     saveToStorage();
-    render();
-  }
-
-  if (e.target.classList.contains("edit")) {
-    const pass = state.passes.find(p => p.id === id);
-
-    userName.value = pass.userName;
-    reason.value = pass.reason;
-    validDate.value = pass.validDate;
-    comment.value = pass.comment;
-    issuer.value = pass.issuer;
-
-    state.editId = id;
-    document.getElementById("cancelEdit").style.display = "inline-block";
-  }
+    renderTable();
+    
+    form.reset();
 });
 
-document.getElementById("cancelEdit").addEventListener("click", function () {
-  form.reset();
-  state.editId = null;
-  this.style.display = "none";
+const cancelBtn = document.getElementById("cancelEditBtn");
+cancelBtn.addEventListener("click", () => {
+    form.reset();
+    editId = null;
+    document.getElementById("submitBtn").innerText = "Додати";
+    cancelBtn.style.display = "none";
+    clearErrors();
 });
 
-searchInput.addEventListener("input", render);
-filterReason.addEventListener("change", render);
+const tbody = document.getElementById("passesTableBody");
 
-document.getElementById("sortDate").addEventListener("click", function () {
-  state.passes.sort((a, b) =>
-    state.sortAsc
-      ? new Date(a.validDate) - new Date(b.validDate)
-      : new Date(b.validDate) - new Date(a.validDate)
-  );
-  state.sortAsc = !state.sortAsc;
-  render();
+tbody.addEventListener("click", (event) => {
+    const target = event.target;
+    
+    if (target.classList.contains("delete-btn")) {
+        const id = Number(target.dataset.id);
+        
+        passes = passes.filter(x => x.id !== id);
+        
+        saveToStorage();
+        renderTable();
+    }
+
+    if (target.classList.contains("edit-btn")) {
+        const id = Number(target.dataset.id);
+        
+        const item = passes.find(x => x.id === id);
+        
+        if (item) {
+            document.getElementById("userNameInput").value = item.userName;
+            document.getElementById("reasonSelect").value = item.reason;
+            document.getElementById("validDateInput").value = item.validDate;
+            document.getElementById("commentInput").value = item.comment;
+            document.getElementById("issuerInput").value = item.issuer;
+
+            editId = id;
+            
+            document.getElementById("submitBtn").innerText = "Зберегти";
+            document.getElementById("cancelEditBtn").style.display = "inline-block";
+        }
+    }
 });
 
-loadFromStorage();
-render();
+passes = loadFromStorage();
+renderTable();

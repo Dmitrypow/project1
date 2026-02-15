@@ -3,95 +3,101 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ЛР1 – Система пропусків</title>
-
+  <title>Система пропусків (Варіант №8)</title>
+  
   <link rel="stylesheet" href="styles.css" />
   <script src="app.js" defer></script>
 </head>
 <body>
 
-<h1>Система пропусків у комп'ютерний клас</h1>
-
-<div class="container">
-
-  <!-- Форма -->
-  <section class="form-section">
-    <h2 id="formTitle">Додати пропуск</h2>
-
-    <form id="passForm">
-
-      <div class="field">
-        <label for="userName">Ім’я студента</label>
-        <input type="text" id="userName" required />
-        <small class="error"></small>
-      </div>
-
-      <div class="field">
-        <label for="reason">Причина</label>
-        <select id="reason" required>
-          <option value="">-- Оберіть --</option>
-          <option>Навчання</option>
-          <option>Лабораторна</option>
-          <option>Проєкт</option>
-          <option>Інше</option>
-        </select>
-        <small class="error"></small>
-      </div>
-
-      <div class="field">
-        <label for="validDate">Дата дії</label>
-        <input type="date" id="validDate" required />
-        <small class="error"></small>
-      </div>
-
-      <div class="field">
-        <label for="comment">Коментар</label>
-        <textarea id="comment"></textarea>
-      </div>
-
-      <div class="field">
-        <label for="issuer">Видав</label>
-        <input type="text" id="issuer" required />
-        <small class="error"></small>
-      </div>
-
-      <button type="submit">Зберегти</button>
-      <button type="button" id="cancelEdit" style="display:none;">Скасувати</button>
-
-    </form>
-  </section>
-
-  <section class="table-section">
-    <h2>Список пропусків</h2>
-
-    <div class="controls">
-      <input type="text" id="searchInput" placeholder="Пошук по імені..." />
-      <select id="filterReason">
-        <option value="">Усі причини</option>
-        <option>Навчання</option>
-        <option>Лабораторна</option>
-        <option>Проєкт</option>
-        <option>Інше</option>
-      </select>
-      <button id="sortDate">Сортувати за датою</button>
+  <header>
+    <div class="container">
+      <h1>Система пропусків у комп'ютерний клас</h1>
     </div>
+  </header>
 
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Студент</th>
-          <th>Причина</th>
-          <th>Дата</th>
-          <th>Видав</th>
-          <th>Дії</th>
-        </tr>
-      </thead>
-      <tbody id="passesTableBody"></tbody>
-    </table>
-  </section>
+  <main class="container">
+    
+    <section id="form-section">
+      <h2 id="formTitle">Новий пропуск</h2>
+      
+      <form id="passForm">
+        <div class="field">
+          <label for="userNameInput">Студент (ПІБ)</label>
+          <input id="userNameInput" type="text" placeholder="Іванов Іван Іванович" />
+          <p class="error-text" id="userNameError"></p>
+        </div>
 
-</div>
+        <div class="field">
+          <label for="reasonSelect">Причина доступу</label>
+          <select id="reasonSelect">
+            <option value="">Оберіть причину</option>
+            <option value="Education">Навчання</option>
+            <option value="LabWork">Лабораторна робота</option>
+            <option value="Project">Робота над проектом</option>
+            <option value="TechSupport">Технічне обслуговування</option>
+          </select>
+          <p class="error-text" id="reasonError"></p>
+        </div>
+
+        <div class="field">
+          <label for="validDateInput">Дійсний до (дата)</label>
+          <input id="validDateInput" type="date" />
+          <p class="error-text" id="validDateError"></p>
+        </div>
+
+        <div class="field">
+          <label for="commentInput">Коментар</label>
+          <textarea id="commentInput" rows="3" placeholder="Додаткова інформація..."></textarea>
+          <p class="error-text" id="commentError"></p>
+        </div>
+
+        <div class="field">
+          <label for="issuerInput">Видав (ПІБ викладача)</label>
+          <input id="issuerInput" type="text" />
+          <p class="error-text" id="issuerError"></p>
+        </div>
+
+        <div class="buttons">
+          <button type="submit" id="submitBtn">Зберегти</button>
+          <button type="button" id="cancelEditBtn" style="display: none;">Скасувати редагування</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="list-section">
+      <h2>Реєстр виданих пропусків</h2>
+
+      <div class="controls">
+        <input type="text" id="searchInput" placeholder="Пошук за студентом..." />
+        <select id="filterReason">
+          <option value="">Усі причини</option>
+          <option value="Education">Навчання</option>
+          <option value="LabWork">Лабораторна робота</option>
+          <option value="Project">Робота над проектом</option>
+          <option value="TechSupport">Технічне обслуговування</option>
+        </select>
+        <button type="button" id="sortDateBtn">Сортувати за датою</button>
+      </div>
+
+      <table id="passesTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Студент</th>
+            <th>Причина</th>
+            <th>Дата дії</th>
+            <th>Коментар</th>
+            <th>Видав</th>
+            <th>Дії</th>
+          </tr>
+        </thead>
+        <tbody id="passesTableBody">
+          </tbody>
+      </table>
+    </section>
+
+  </main>
 
 </body>
 </html>

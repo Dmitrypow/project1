@@ -1,19 +1,33 @@
-* {
-  box-sizing: border-box;
-}
-
 body {
   font-family: Arial, sans-serif;
-  margin: 20px;
+  font-size: 16px;
+  background: #f5f5f5;
+  margin: 0;
+  color: #333;
 }
 
 .container {
-  display: flex;
-  gap: 30px;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px;
 }
 
-.form-section, .table-section {
-  flex: 1;
+header {
+  background: #fff;
+  border-bottom: 1px solid #ccc;
+  margin-bottom: 20px;
+}
+
+h1, h2 {
+  margin-top: 0;
+}
+
+section {
+  background: #fff;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-bottom: 20px;
 }
 
 .field {
@@ -22,46 +36,77 @@ body {
 
 .field label {
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 5px;
+  font-weight: bold;
 }
 
-input, select, textarea {
+.field input,
+.field select,
+.field textarea {
   width: 100%;
-  padding: 6px;
+  padding: 8px;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.field input.invalid,
+.field select.invalid,
+.field textarea.invalid {
+  border-color: #c00;
+  background-color: #fff0f0;
+}
+
+.error-text {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #c00;
+  min-height: 14px;
+}
+
+.buttons, .controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  align-items: center;
 }
 
 button {
-  padding: 6px 12px;
-  margin-right: 5px;
+  padding: 8px 16px;
   cursor: pointer;
+  border: 1px solid #888;
+  border-radius: 4px;
+  background-color: #e0e0e0;
+}
+
+button:hover {
+  background-color: #d0d0d0;
+}
+
+button[type="submit"] {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
+  margin-top: 15px;
 }
 
 th, td {
   border: 1px solid #ccc;
-  padding: 6px;
+  padding: 8px;
   text-align: left;
 }
 
 th {
-  background: #f0f0f0;
+  background: #eee;
 }
 
-.error {
-  color: red;
-  font-size: 12px;
-}
-
-.invalid {
-  border: 1px solid red;
-}
-
-.controls {
-  display: flex;
-  gap: 10px;
+.controls input, .controls select {
+  padding: 6px;
+  border: 1px solid #bbb;
+  border-radius: 4px;
 }
