@@ -72,10 +72,10 @@
         <input type="text" id="searchInput" placeholder="Пошук за студентом..." />
         <select id="filterReason">
           <option value="">Усі причини</option>
-          <option value="Education">Навчання</option>
-          <option value="LabWork">Лабораторна робота</option>
-          <option value="Project">Робота над проектом</option>
-          <option value="TechSupport">Технічне обслуговування</option>
+          <option value="Навчання">Навчання</option>
+          <option value="Лабораторна робота">Лабораторна робота</option>
+          <option value="Робота над проектом">Робота над проектом</option>
+          <option value="Технічне обслуговування">Технічне обслуговування</option>
         </select>
         <button type="button" id="sortDateBtn">Сортувати за датою</button>
       </div>
@@ -83,12 +83,12 @@
       <table id="passesTable">
         <thead>
           <tr>
-            <th>#</th>
-            <th>Студент</th>
-            <th>Причина</th>
-            <th>Дата дії</th>
-            <th>Коментар</th>
-            <th>Видав</th>
+            <th style="cursor:pointer" data-sort="index"># <span class="sort-icon"></span></th>
+            <th style="cursor:pointer" data-sort="userName">Студент <span class="sort-icon"></span></th>
+            <th style="cursor:pointer" data-sort="reason">Причина <span class="sort-icon"></span></th>
+            <th style="cursor:pointer" data-sort="validDate">Дата дії <span class="sort-icon"></span></th>
+            <th style="cursor:pointer" data-sort="comment">Коментар <span class="sort-icon"></span></th>
+            <th style="cursor:pointer" data-sort="issuer">Видав <span class="sort-icon"></span></th>
             <th>Дії</th>
           </tr>
         </thead>

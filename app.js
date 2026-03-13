@@ -82,7 +82,7 @@ function validate(dto) {
     return isValid;
 }
 
-function renderTable() {
+function renderTable(dataToDisplay = passes) {
     const tbody = document.getElementById("passesTableBody");
     
     const rowsHtml = passes.map((item, index) => {
@@ -191,3 +191,54 @@ tbody.addEventListener("click", (event) => {
 
 passes = loadFromStorage();
 renderTable();
+
+let sortDirection = true;
+let currentSortColumn = null;
+
+function updateSortIcons(column, direction) {
+    document.querySelectorAll('.sort-icon').forEach(span => span.innerHTML = '');
+    
+    const activeHeader = document.querySelector(`th[data-sort="${column}"] .sort-icon`);
+    if (activeHeader) {
+        activeHeader.innerHTML = direction ? '⬆️' : '⬇️';
+
+    }
+}
+function sortPasses(column) {
+    sortDirection = (currentSortColumn === column) ? !sortDirection : true;
+    currentSortColumn = column;
+
+    passes.sort((a, b) => {
+        let valA = (column === 'index') ? passes.indexOf(a) : a[column];
+        let valB = (column === 'index') ? passes.indexOf(b) : b[column];
+
+        if (valA < valB) return sortDirection ? -1 : 1;
+        if (valA > valB) return sortDirection ? 1 : -1;
+
+        return 0;
+    });
+
+    updateSortIcons(column, sortDirection);
+    renderTable();
+}
+
+document.querySelectorAll('th[data-sort]').forEach(header => {
+    header.addEventListener('click', () => {
+        sortPasses(header.dataset.sort);
+    });
+});
+
+function applyFilters() {
+    const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+    const selectedPasses = document.getElementById("filterReason").value;
+
+    const filteredPasses = passes.filter(item => {
+        const matchesName = item.userName.toLowerCase().includes(searchTerm);
+        const machesReason = selectedReason === "" || item.reason === selectedReason;
+
+        return matchesName && machesReason;
+    });
+    renderTable(filteredPasses);
+}
+document.getElementById("searchInput").addEventListener("input", applyFilters);
+document.getElementById("firteredReason").addEventListener("change", applyFilters);
