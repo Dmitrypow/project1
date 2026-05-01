@@ -2,7 +2,6 @@ let passes = [];
 let editId = null;
 let displayedPasses = [];
 
-app.use("/passes", require("./routes/passes.routes"));
 function saveToStorage() {
     const json = JSON.stringify(passes);
     localStorage.setItem("lr1_passes", json);
@@ -85,54 +84,7 @@ function validate(dto) {
 }
 
 
-
-function renderStats() {
-    const reasons = ["Навчання", "Лабораторна робота", "Робота над проектом", "Технічне обслуговування"];
-    const tbody = document.getElementById("statsTableBody");
-    const emptyMsg = document.getElementById("statsEmpty");
-
-    const rows = [];
-
-    for (const reason of reasons) {
-        const filtered = passes.filter(p => p.reason === reason);
-        if (filtered.length === 0) continue;
-
-        // Count per student
-        const counts = {};
-        for (const p of filtered) {
-            counts[p.userName] = (counts[p.userName] || 0) + 1;
-        }
-
-        // Find student with max count
-        let topStudent = null;
-        let topCount = 0;
-        for (const [name, count] of Object.entries(counts)) {
-            if (count > topCount) {
-                topCount = count;
-                topStudent = name;
-            }
-        }
-
-        rows.push({ reason, topStudent, topCount });
-    }
-
-    if (rows.length === 0) {
-        tbody.innerHTML = "";
-        emptyMsg.style.display = "block";
-        return;
-    }
-
-    emptyMsg.style.display = "none";
-    tbody.innerHTML = rows.map(r => `
-        <tr>
-            <td>${r.reason}</td>
-            <td>${r.topStudent}</td>
-            <td style="text-align:center;">${r.topCount}</td>
-        </tr>
-    `).join("");
-}
-
-
+function renderTable(dataToDisplay) {
     const tbody = document.getElementById("passesTableBody");
     
     const rowsHtml = dataToDisplay.map((item, index) => {
@@ -192,7 +144,6 @@ form.addEventListener("submit", (event) => {
 
     saveToStorage();
     renderTable(passes);
-    renderStats();
     
     form.reset();
 });
@@ -218,7 +169,6 @@ tbody.addEventListener("click", (event) => {
         
         saveToStorage();
         renderTable(passes);
-        renderStats();
     }
 
     if (target.classList.contains("edit-btn")) {
@@ -244,7 +194,6 @@ tbody.addEventListener("click", (event) => {
 passes = loadFromStorage();
 displayedPasses = [...passes];
 renderTable(displayedPasses);
-renderStats();
 
 let sortDirection = true;
 let currentSortColumn = null;
