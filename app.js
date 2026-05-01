@@ -2,6 +2,7 @@ let passes = [];
 let editId = null;
 let displayedPasses = [];
 
+app.use("/passes", require("./routes/passes.routes"));
 function saveToStorage() {
     const json = JSON.stringify(passes);
     localStorage.setItem("lr1_passes", json);
@@ -234,7 +235,7 @@ document.querySelectorAll('th[data-sort]').forEach(header => {
 
 function applyFilters() {
     const searchTerm = document.getElementById("searchByName").value.toLowerCase();
-    const selectedPasses = document.getElementById("filterReason").value;
+    const selectedReason = document.getElementById("filterReason").value;
 
     const filteredPasses = passes.filter(item => {
         const matchesName = item.userName.toLowerCase().includes(searchTerm);

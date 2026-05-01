@@ -61,4 +61,13 @@ function remove(req, res, next) {
   }
 }
 
-module.exports = { getAll, getById, create, update, remove };
+function getTopByReason(req, res) {
+  try {
+    const data = passesService.getTopStudentByReason()
+    res.json(data)
+  } catch (e) {
+    res.status(500).json({ error: e.message })
+  }
+}
+
+module.exports = { getAll, getById, create, update, remove, getTopByReason };

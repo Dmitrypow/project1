@@ -1,4 +1,5 @@
 const passesRepo = require("../repositories/passes.repository");
+
 const { ApiError } = require("../middleware/error-handler.middleware");
 
 function getAll(filters) {
@@ -44,4 +45,46 @@ function remove(id) {
   if (!deleted) throw new ApiError(404, "NOT_FOUND", `Pass with id "${id}" not found`);
 }
 
-module.exports = { getAll, getById, create, update, remove };
+function getTopStudentByReason() {
+  const passes = passesRepo.getAll()  
+
+  const stats = {};
+
+  for (const p of passes) {
+    const reason = p.reason
+    const student = p.userId   
+
+    if (!reason || !student) continue
+
+    if (!stats[reason]) {
+      stats[reason] = {}
+    }
+
+    stats[reason][student] = (stats[reason][student] || 0) + 1
+  }
+
+  const result = {};
+
+  for (const reason in stats) {
+    let max = 0
+    let topStudent = null
+
+    for (const student in stats[reason]) {
+      const count = stats[reason][student]
+
+      if (count > max) {
+        max = count
+        topStudent = student
+      }
+    }
+
+    result[reason] = {
+      studentId: topStudent,
+      count: max
+    }
+  }
+
+  return result;
+}
+
+module.exports = { getAll, getById, create, update, remove, getTopStudentByReason };
