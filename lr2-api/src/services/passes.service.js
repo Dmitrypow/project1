@@ -52,7 +52,7 @@ function getTopStudentByReason() {
 
   for (const p of passes) {
     const reason = p.reason
-    const student = p.userId   
+    const student = p.studentName  
 
     if (!reason || !student) continue
 
@@ -88,3 +88,4 @@ function getTopStudentByReason() {
 }
 
 module.exports = { getAll, getById, create, update, remove, getTopStudentByReason };
+`
