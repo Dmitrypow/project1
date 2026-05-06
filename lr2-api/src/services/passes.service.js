@@ -88,4 +88,3 @@ function getTopStudentByReason() {
 }
 
 module.exports = { getAll, getById, create, update, remove, getTopStudentByReason };
-`
