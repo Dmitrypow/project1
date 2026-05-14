@@ -8,6 +8,6 @@ router.get("/:id", controller.getById);
 router.post("/", controller.create);
 router.put("/:id", controller.update);
 router.delete("/:id", controller.remove);
-router.get("/by-date/:date", controller.getByDate);
+//router.get("/by-date/:date", controller.getByDate);
 
 module.exports = router;

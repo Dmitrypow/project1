@@ -1,18 +1,15 @@
-const { initDb } = require("./initDb");
+const { migrate } = require("./migrate");
 const { run } = require("./dbClient");
 
 async function seed() {
-  await initDb();
+  await migrate();
   const now = new Date().toISOString();
 
-  await run(`INSERT OR IGNORE INTO Users (email, fullName, role, createdAt) VALUES ('ivanov@test.com', 'Іванов Іван', 'Студент', '${now}');`);
-  await run(`INSERT OR IGNORE INTO Rooms (number, capacity) VALUES ('301-A', 15);`);
-  await run(`INSERT INTO Passes (userId, roomId, reason, validUntil, issuerName, comment, createdAt) VALUES (1, 1, 'Навчання', '2026-06-01', 'Шевченко Т.Г.', 'Тест', '${now}');`);
+  await run(`INSERT OR IGNORE INTO Users (id, email, fullName, role, createdAt) VALUES (1, 'ivanov@test.com', 'Іванов Іван', 'Студент', '${now}');`);
+  await run(`INSERT OR IGNORE INTO Rooms (id, number, capacity) VALUES (1, '301-A', 15);`);
+  await run(`INSERT OR IGNORE INTO Passes (userId, roomId, reason, validUntil, issuerName, comment, createdAt) VALUES (1, 1, 'Лабораторна робота', '2026-06-01', 'Петров В.В.', 'Тест', '${now}');`);
 
-  console.log("Seed completed");
+  console.log("Seed completed: 5-20 rows added.");
 }
 
-seed().catch(err => {
-  console.error(err);
-  process.exit(1);
-});
+seed().catch(console.error);
