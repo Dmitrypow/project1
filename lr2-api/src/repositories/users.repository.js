@@ -1,43 +1,43 @@
-const { v4: uuidv4 } = require("uuid");
+const { all, get, run, escapeSql } = require("../db/dbClient");
 
-const users = [];
-
-function getAll() {
-  return [...users];
+async function getAll() {
+  return await all("SELECT * FROM Users ORDER BY id DESC;");
 }
 
-function getById(id) {
-  return users.find((u) => u.id === id) || null;
+async function getById(id) {
+  return await get(`SELECT * FROM Users WHERE id = ${Number(id)};`);
 }
 
-function getByEmail(email) {
-  return users.find((u) => u.email === email) || null;
+async function getByEmail(email) {
+  return await get(`SELECT * FROM Users WHERE email = '${escapeSql(email)}';`);
 }
 
-function add(dto) {
-  const entity = {
-    id: uuidv4(),
-    fullName: dto.fullName,
-    email: dto.email,
-    role: dto.role,
-    createdAt: new Date().toISOString(),
-  };
-  users.push(entity);
-  return entity;
+async function add(dto) {
+  const now = new Date().toISOString();
+  const sql = `
+    INSERT INTO Users (fullName, email, role, createdAt)
+    VALUES ('${escapeSql(dto.fullName)}', '${escapeSql(dto.email)}', '${escapeSql(dto.role)}', '${now}');
+  `;
+  const result = await run(sql);
+  return await getById(result.lastID);
 }
 
-function update(id, dto) {
-  const index = users.findIndex((u) => u.id === id);
-  if (index === -1) return null;
-  users[index] = { ...users[index], ...dto };
-  return users[index];
+async function update(id, dto) {
+  const updates = [];
+  if (dto.fullName) updates.push(`fullName = '${escapeSql(dto.fullName)}'`);
+  if (dto.email) updates.push(`email = '${escapeSql(dto.email)}'`);
+  if (dto.role) updates.push(`role = '${escapeSql(dto.role)}'`);
+  
+  if (updates.length === 0) return await getById(id);
+
+  const result = await run(`UPDATE Users SET ${updates.join(', ')} WHERE id = ${Number(id)};`);
+  if (result.changes === 0) return null;
+  return await getById(id);
 }
 
-function remove(id) {
-  const index = users.findIndex((u) => u.id === id);
-  if (index === -1) return false;
-  users.splice(index, 1);
-  return true;
+async function remove(id) {
+  const result = await run(`DELETE FROM Users WHERE id = ${Number(id)};`);
+  return result.changes > 0;
 }
 
 module.exports = { getAll, getById, getByEmail, add, update, remove };

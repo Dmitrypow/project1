@@ -1,55 +1,53 @@
-const { v4: uuidv4 } = require("uuid");
+const { all, get, run, escapeSql } = require("../db/dbClient");
 
-const passes = [];
-
-function getAll({ reason, studentName } = {}) {
-  let result = [...passes];
-
+async function getAll({ reason } = {}) {
+  let sql = `
+    SELECT p.*, u.fullName as studentName, r.number as roomNumber 
+    FROM Passes p
+    JOIN Users u ON p.userId = u.id
+    JOIN Rooms r ON p.roomId = r.id
+    WHERE 1=1
+  `;
   if (reason) {
-    result = result.filter((p) => p.reason === reason);
+    sql += ` AND p.reason = '${escapeSql(reason)}'`;
   }
-  if (studentName) {
-    const search = studentName.toLowerCase();
-    result = result.filter((p) => p.studentName.toLowerCase().includes(search));
-  }
-
-  return result;
+  sql += ` ORDER BY p.id DESC;`;
+  return await all(sql);
 }
 
-function getById(id) {
-  return passes.find((p) => p.id === id) || null;
+async function getById(id) {
+  return await get(`SELECT * FROM Passes WHERE id = ${Number(id)};`);
 }
 
-function add(dto) {
-  const entity = {
-    id: uuidv4(),
-    studentName: dto.studentName,
-    reason: dto.reason,
-    validUntil: dto.validUntil,
-    issuerName: dto.issuerName,
-    comment: dto.comment || "",
-    createdAt: new Date().toISOString(),
-  };
-  passes.push(entity);
-  return entity;
+async function add(dto) {
+  const now = new Date().toISOString();
+  const sql = `
+    INSERT INTO Passes (userId, roomId, reason, validUntil, issuerName, comment, createdAt)
+    VALUES (${Number(dto.userId)}, ${Number(dto.roomId)}, '${escapeSql(dto.reason)}', '${escapeSql(dto.validUntil)}', '${escapeSql(dto.issuerName)}', '${escapeSql(dto.comment || "")}', '${now}');
+  `;
+  const result = await run(sql);
+  return await getById(result.lastID);
 }
 
-function update(id, dto) {
-  const index = passes.findIndex((p) => p.id === id);
-  if (index === -1) return null;
-  passes[index] = { ...passes[index], ...dto };
-  return passes[index];
+async function update(id, dto) {
+  const updates = [];
+  if (dto.userId) updates.push(`userId = ${Number(dto.userId)}`);
+  if (dto.roomId) updates.push(`roomId = ${Number(dto.roomId)}`);
+  if (dto.reason) updates.push(`reason = '${escapeSql(dto.reason)}'`);
+  if (dto.validUntil) updates.push(`validUntil = '${escapeSql(dto.validUntil)}'`);
+  if (dto.issuerName) updates.push(`issuerName = '${escapeSql(dto.issuerName)}'`);
+  if (dto.comment !== undefined) updates.push(`comment = '${escapeSql(dto.comment)}'`);
+
+  if (updates.length === 0) return await getById(id);
+
+  const result = await run(`UPDATE Passes SET ${updates.join(', ')} WHERE id = ${Number(id)};`);
+  if (result.changes === 0) return null;
+  return await getById(id);
 }
 
-function remove(id) {
-  const index = passes.findIndex((p) => p.id === id);
-  if (index === -1) return false;
-  passes.splice(index, 1);
-  return true;
+async function remove(id) {
+  const result = await run(`DELETE FROM Passes WHERE id = ${Number(id)};`);
+  return result.changes > 0;
 }
 
-function getByDate(date) {
-  return passes.filter((p) => p.validUntil === date);
-}
-
-module.exports = { getAll, getById, add, update, remove, getByDate };
+module.exports = { getAll, getById, add, update, remove };
