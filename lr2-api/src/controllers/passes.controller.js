@@ -1,77 +1,46 @@
 const passesService = require("../services/passes.service");
 const { ApiError } = require("../middleware/error-handler.middleware");
-const {
-  validateCreatePassDto,
-  parseCreatePassDto,
-  validateUpdatePassDto,
-  parseUpdatePassDto,
-  toPassResponseDto,
-} = require("../dtos/passes.dto");
+const { validateCreatePassDto, parseCreatePassDto, validateUpdatePassDto, parseUpdatePassDto, toPassResponseDto } = require("../dtos/passes.dto");
 
-function getAll(req, res) {
-  const { reason, studentName } = req.query;
-  const passes = passesService.getAll({ reason, studentName });
-  res.status(200).json({ items: passes.map(toPassResponseDto) });
-}
-
-function getById(req, res, next) {
+async function getAll(req, res, next) {
   try {
-    const pass = passesService.getById(req.params.id);
-    res.status(200).json(toPassResponseDto(pass));
-  } catch (err) {
-    next(err);
-  }
+    const passes = await passesService.getAll(req.query);
+    res.status(200).json({ items: passes.map(toPassResponseDto) });
+  } catch (err) { next(err); }
 }
 
-function create(req, res, next) {
+async function getById(req, res, next) {
+  try {
+    const pass = await passesService.getById(req.params.id);
+    res.status(200).json(toPassResponseDto(pass));
+  } catch (err) { next(err); }
+}
+
+async function create(req, res, next) {
   try {
     const errors = validateCreatePassDto(req.body);
-    if (errors.length > 0) {
-      throw new ApiError(400, "VALIDATION_ERROR", "Invalid request body", errors);
-    }
+    if (errors.length > 0) throw new ApiError(400, "VALIDATION_ERROR", "Invalid request body", errors);
     const dto = parseCreatePassDto(req.body);
-    const pass = passesService.create(dto);
+    const pass = await passesService.create(dto);
     res.status(201).json(toPassResponseDto(pass));
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 }
 
-function update(req, res, next) {
+async function update(req, res, next) {
   try {
     const errors = validateUpdatePassDto(req.body);
-    if (errors.length > 0) {
-      throw new ApiError(400, "VALIDATION_ERROR", "Invalid request body", errors);
-    }
+    if (errors.length > 0) throw new ApiError(400, "VALIDATION_ERROR", "Invalid request body", errors);
     const dto = parseUpdatePassDto(req.body);
-    const pass = passesService.update(req.params.id, dto);
+    const pass = await passesService.update(req.params.id, dto);
     res.status(200).json(toPassResponseDto(pass));
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 }
 
-function remove(req, res, next) {
+async function remove(req, res, next) {
   try {
-    passesService.remove(req.params.id);
+    await passesService.remove(req.params.id);
     res.status(204).send();
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 }
 
-function getByDate(req, res, next) {
-  try {
-    const { date } = req.params;
-    const passes = passesService.getByDate(date);
-    const result = passes.map((p) => ({
-      studentName: p.studentName,
-      reason: p.reason,
-    }));
-    res.status(200).json({ date, items: result });
-  } catch (err) {
-    next(err);
-  }
-}
-
-module.exports = { getAll, getById, create, update, remove, getByDate };
+module.exports = { getAll, getById, create, update, remove };

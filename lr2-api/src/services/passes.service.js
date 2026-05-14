@@ -1,28 +1,28 @@
 const passesRepo = require("../repositories/passes.repository");
 const { ApiError } = require("../middleware/error-handler.middleware");
 
-function getAll(filters) {
-  return passesRepo.getAll(filters);
+async function getAll(filters) {
+  return await passesRepo.getAll(filters);
 }
 
-function getById(id) {
-  const pass = passesRepo.getById(id);
+async function getById(id) {
+  const pass = await passesRepo.getById(id);
   if (!pass) throw new ApiError(404, "NOT_FOUND", `Pass with id "${id}" not found`);
   return pass;
 }
 
-function create(dto) {
+async function create(dto) {
   const today = new Date().toISOString().slice(0, 10);
   if (dto.validUntil < today) {
     throw new ApiError(400, "VALIDATION_ERROR", "validUntil must not be in the past", [
       { field: "validUntil", message: "Date must be today or in the future" },
     ]);
   }
-  return passesRepo.add(dto);
+  return await passesRepo.add(dto);
 }
 
-function update(id, dto) {
-  const existing = passesRepo.getById(id);
+async function update(id, dto) {
+  const existing = await passesRepo.getById(id);
   if (!existing) throw new ApiError(404, "NOT_FOUND", `Pass with id "${id}" not found`);
 
   if (dto.validUntil) {
@@ -34,20 +34,12 @@ function update(id, dto) {
     }
   }
 
-  return passesRepo.update(id, dto);
+  return await passesRepo.update(id, dto);
 }
 
-function remove(id) {
-  const deleted = passesRepo.remove(id);
+async function remove(id) {
+  const deleted = await passesRepo.remove(id);
   if (!deleted) throw new ApiError(404, "NOT_FOUND", `Pass with id "${id}" not found`);
 }
 
-function getByDate(date) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || isNaN(Date.parse(date))) {
-    throw new ApiError(400, "VALIDATION_ERROR", "Invalid date format", [
-      { field: "date", message: "Date must be in ISO format YYYY-MM-DD" },
-    ]);
-  }
-  return passesRepo.getByDate(date);
-}
-module.exports = { getAll, getById, create, update, remove, getByDate };
+module.exports = { getAll, getById, create, update, remove };
