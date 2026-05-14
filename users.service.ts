@@ -1,17 +1,18 @@
-const usersRepo = require("../repositories/users.repository");
-const { ApiError } = require("../middleware/error-handler.middleware");
+import * as usersRepo from "../repositories/users.repository";
+import { ApiError } from "../middleware/error-handler.middleware";
+import { CreateUserDto, UpdateUserDto, UserEntity } from "../dtos/users.dto";
 
-function getAll() {
+export function getAll(): UserEntity[] {
   return usersRepo.getAll();
 }
 
-function getById(id) {
+export function getById(id: number): UserEntity {
   const user = usersRepo.getById(id);
   if (!user) throw new ApiError(404, "NOT_FOUND", `User with id "${id}" not found`);
   return user;
 }
 
-function create(dto) {
+export function create(dto: CreateUserDto): UserEntity {
   const existing = usersRepo.getByEmail(dto.email);
   if (existing) {
     throw new ApiError(409, "CONFLICT", `User with email "${dto.email}" already exists`);
@@ -19,7 +20,7 @@ function create(dto) {
   return usersRepo.add(dto);
 }
 
-function update(id, dto) {
+export function update(id: number, dto: UpdateUserDto): UserEntity {
   const existing = usersRepo.getById(id);
   if (!existing) throw new ApiError(404, "NOT_FOUND", `User with id "${id}" not found`);
 
@@ -30,12 +31,12 @@ function update(id, dto) {
     }
   }
 
-  return usersRepo.update(id, dto);
+  const updated = usersRepo.update(id, dto);
+  if (!updated) throw new ApiError(404, "NOT_FOUND", `User with id "${id}" not found`);
+  return updated;
 }
 
-function remove(id) {
+export function remove(id: number): void {
   const deleted = usersRepo.remove(id);
   if (!deleted) throw new ApiError(404, "NOT_FOUND", `User with id "${id}" not found`);
 }
-
-module.exports = { getAll, getById, create, update, remove };

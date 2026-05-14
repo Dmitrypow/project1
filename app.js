@@ -1,6 +1,5 @@
 let passes = [];
 let editId = null;
-let displayedPasses = [];
 
 function saveToStorage() {
     const json = JSON.stringify(passes);
@@ -83,11 +82,10 @@ function validate(dto) {
     return isValid;
 }
 
-
-function renderTable(dataToDisplay) {
+function renderTable(dataToDisplay = passes) {
     const tbody = document.getElementById("passesTableBody");
     
-    const rowsHtml = dataToDisplay.map((item, index) => {
+    const rowsHtml = passes.map((item, index) => {
         return `
             <tr>
                 <td>${index + 1}</td>
@@ -143,7 +141,7 @@ form.addEventListener("submit", (event) => {
     }
 
     saveToStorage();
-    renderTable(passes);
+    renderTable();
     
     form.reset();
 });
@@ -168,7 +166,7 @@ tbody.addEventListener("click", (event) => {
         passes = passes.filter(x => x.id !== id);
         
         saveToStorage();
-        renderTable(passes);
+        renderTable();
     }
 
     if (target.classList.contains("edit-btn")) {
@@ -192,8 +190,7 @@ tbody.addEventListener("click", (event) => {
 });
 
 passes = loadFromStorage();
-displayedPasses = [...passes];
-renderTable(displayedPasses);
+renderTable();
 
 let sortDirection = true;
 let currentSortColumn = null;
@@ -211,9 +208,9 @@ function sortPasses(column) {
     sortDirection = (currentSortColumn === column) ? !sortDirection : true;
     currentSortColumn = column;
 
-    displayedPasses.sort((a, b) => {
-        let valA = (column === 'index') ? displayedPasses.indexOf(a) : a[column];
-        let valB = (column === 'index') ? displayedPasses.indexOf(b) : b[column];
+    passes.sort((a, b) => {
+        let valA = (column === 'index') ? passes.indexOf(a) : a[column];
+        let valB = (column === 'index') ? passes.indexOf(b) : b[column];
 
         if (valA < valB) return sortDirection ? -1 : 1;
         if (valA > valB) return sortDirection ? 1 : -1;
@@ -222,7 +219,7 @@ function sortPasses(column) {
     });
 
     updateSortIcons(column, sortDirection);
-    renderTable(displayedPasses);
+    renderTable();
 }
 
 document.querySelectorAll('th[data-sort]').forEach(header => {
@@ -232,8 +229,8 @@ document.querySelectorAll('th[data-sort]').forEach(header => {
 });
 
 function applyFilters() {
-    const searchTerm = document.getElementById("searchByName").value.toLowerCase();
-    const selectedReason = document.getElementById("filterReason").value;
+    const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+    const selectedPasses = document.getElementById("filterReason").value;
 
     const filteredPasses = passes.filter(item => {
         const matchesName = item.userName.toLowerCase().includes(searchTerm);
@@ -243,18 +240,5 @@ function applyFilters() {
     });
     renderTable(filteredPasses);
 }
-
-function searchByStudent() {
-    const searchTerm = document.getElementById("searchByName").value.toLowerCase();
-
-    const filtered = passes.filter(item =>
-        item.userName.toLowerCase().includes(searchTerm)
-    );
-
-    renderTable(filtered);
-}
-
-document.getElementById("searchByName").addEventListener("input", searchByStudent);
-document.getElementById("findNames").addEventListener("click", searchByStudent);
-document.getElementById("searchByName").addEventListener("input", applyFilters);
+document.getElementById("searchInput").addEventListener("input", applyFilters);
 document.getElementById("firteredReason").addEventListener("change", applyFilters);

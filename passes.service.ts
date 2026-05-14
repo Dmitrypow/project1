@@ -1,17 +1,29 @@
-const passesRepo = require("../repositories/passes.repository");
-const { ApiError } = require("../middleware/error-handler.middleware");
+import * as passesRepo from "../repositories/passes.repository";
+import { ApiError } from "../middleware/error-handler.middleware";
+import { CreatePassDto, UpdatePassDto, PassEntity } from "../dtos/passes.dto";
+import { PassFilters } from "../repositories/passes.repository";
 
-function getAll(filters) {
+export function getAll(filters: PassFilters): PassEntity[] {
   return passesRepo.getAll(filters);
 }
 
-function getById(id) {
+export function getById(id: number): PassEntity {
   const pass = passesRepo.getById(id);
   if (!pass) throw new ApiError(404, "NOT_FOUND", `Pass with id "${id}" not found`);
   return pass;
 }
 
-function create(dto) {
+export function getByIdWithUser(id: number): Record<string, unknown> {
+  const pass = passesRepo.getByIdWithUser(id);
+  if (!pass) throw new ApiError(404, "NOT_FOUND", `Pass with id "${id}" not found`);
+  return pass;
+}
+
+export function getStatsByReason(): Record<string, unknown>[] {
+  return passesRepo.getStatsByReason();
+}
+
+export function create(dto: CreatePassDto): PassEntity {
   const today = new Date().toISOString().slice(0, 10);
   if (dto.validUntil < today) {
     throw new ApiError(400, "VALIDATION_ERROR", "validUntil must not be in the past", [
@@ -21,7 +33,7 @@ function create(dto) {
   return passesRepo.add(dto);
 }
 
-function update(id, dto) {
+export function update(id: number, dto: UpdatePassDto): PassEntity {
   const existing = passesRepo.getById(id);
   if (!existing) throw new ApiError(404, "NOT_FOUND", `Pass with id "${id}" not found`);
 
@@ -34,20 +46,12 @@ function update(id, dto) {
     }
   }
 
-  return passesRepo.update(id, dto);
+  const updated = passesRepo.update(id, dto);
+  if (!updated) throw new ApiError(404, "NOT_FOUND", `Pass with id "${id}" not found`);
+  return updated;
 }
 
-function remove(id) {
+export function remove(id: number): void {
   const deleted = passesRepo.remove(id);
   if (!deleted) throw new ApiError(404, "NOT_FOUND", `Pass with id "${id}" not found`);
 }
-
-function getByDate(date) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || isNaN(Date.parse(date))) {
-    throw new ApiError(400, "VALIDATION_ERROR", "Invalid date format", [
-      { field: "date", message: "Date must be in ISO format YYYY-MM-DD" },
-    ]);
-  }
-  return passesRepo.getByDate(date);
-}
-module.exports = { getAll, getById, create, update, remove, getByDate };

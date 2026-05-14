@@ -69,8 +69,15 @@
       <h2>Реєстр виданих пропусків</h2>
 
       <div class="controls">
-        <input type="text" id="searchByName" placeholder="Пошук за студентом..." />
-        <button type="button" id="findNames">Знайти</button>
+        <input type="text" id="searchInput" placeholder="Пошук за студентом..." />
+        <select id="filterReason">
+          <option value="">Усі причини</option>
+          <option value="Навчання">Навчання</option>
+          <option value="Лабораторна робота">Лабораторна робота</option>
+          <option value="Робота над проектом">Робота над проектом</option>
+          <option value="Технічне обслуговування">Технічне обслуговування</option>
+        </select>
+        <button type="button" id="sortDateBtn">Сортувати за датою</button>
       </div>
 
       <table id="passesTable">

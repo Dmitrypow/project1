@@ -1,6 +1,5 @@
 const { v4: uuidv4 } = require("uuid");
 
-// In-memory storage
 const passes = [];
 
 function getAll({ reason, studentName } = {}) {
@@ -49,4 +48,8 @@ function remove(id) {
   return true;
 }
 
-module.exports = { getAll, getById, add, update, remove };
+function getByDate(date) {
+  return passes.filter((p) => p.validUntil === date);
+}
+
+module.exports = { getAll, getById, add, update, remove, getByDate };

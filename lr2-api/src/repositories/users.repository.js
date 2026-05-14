@@ -1,6 +1,5 @@
 const { v4: uuidv4 } = require("uuid");
 
-// In-memory storage
 const users = [];
 
 function getAll() {

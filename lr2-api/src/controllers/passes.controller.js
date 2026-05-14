@@ -9,7 +9,6 @@ const {
 } = require("../dtos/passes.dto");
 
 function getAll(req, res) {
-  // Filtering via query params: ?reason=...&studentName=...
   const { reason, studentName } = req.query;
   const passes = passesService.getAll({ reason, studentName });
   res.status(200).json({ items: passes.map(toPassResponseDto) });
@@ -61,13 +60,18 @@ function remove(req, res, next) {
   }
 }
 
-function getTopByReason(req, res) {
+function getByDate(req, res, next) {
   try {
-    const data = passesService.getTopStudentByReason()
-    res.json(data)
-  } catch (e) {
-    res.status(500).json({ error: e.message })
+    const { date } = req.params;
+    const passes = passesService.getByDate(date);
+    const result = passes.map((p) => ({
+      studentName: p.studentName,
+      reason: p.reason,
+    }));
+    res.status(200).json({ date, items: result });
+  } catch (err) {
+    next(err);
   }
 }
 
-module.exports = { getAll, getById, create, update, remove, getTopByReason };
+module.exports = { getAll, getById, create, update, remove, getByDate };

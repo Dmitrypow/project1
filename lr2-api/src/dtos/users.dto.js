@@ -1,4 +1,3 @@
-// ---- Validation helpers ----
 
 function requireString(value, field, minLen = 1) {
   if (typeof value !== "string" || value.trim().length < minLen) {
@@ -14,7 +13,6 @@ function requireEmail(value, field) {
   return null;
 }
 
-// ---- CreateUserRequestDto ----
 
 function validateCreateUserDto(body) {
   const errors = [];
@@ -35,7 +33,6 @@ function parseCreateUserDto(body) {
   };
 }
 
-// ---- UpdateUserRequestDto ----
 
 function validateUpdateUserDto(body) {
   const errors = [];
@@ -65,7 +62,6 @@ function parseUpdateUserDto(body) {
   return dto;
 }
 
-// ---- UserResponseDto ----
 
 function toUserResponseDto(user) {
   return {

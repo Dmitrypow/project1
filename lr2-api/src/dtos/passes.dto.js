@@ -1,6 +1,5 @@
 const ALLOWED_REASONS = ["Навчання", "Лабораторна робота", "Робота над проектом", "Технічне обслуговування"];
 
-// ---- Validation helpers ----
 
 function requireString(value, field, minLen = 1) {
   if (typeof value !== "string" || value.trim().length < minLen) {
@@ -23,7 +22,6 @@ function requireEnum(value, field, allowed) {
   return null;
 }
 
-// ---- CreatePassRequestDto ----
 
 function validateCreatePassDto(body) {
   const errors = [];
@@ -40,7 +38,6 @@ function validateCreatePassDto(body) {
   const e4 = requireString(body.issuerName, "issuerName", 2);
   if (e4) errors.push(e4);
 
-  // comment is optional, but if provided must be a string
   if (body.comment !== undefined && body.comment !== null) {
     const e5 = requireString(body.comment, "comment", 0);
     if (e5) errors.push(e5);
@@ -62,7 +59,6 @@ function parseCreatePassDto(body) {
   };
 }
 
-// ---- UpdatePassRequestDto ----
 
 function validateUpdatePassDto(body) {
   const errors = [];
@@ -110,7 +106,6 @@ function parseUpdatePassDto(body) {
   return dto;
 }
 
-// ---- PassResponseDto ----
 
 function toPassResponseDto(pass) {
   return {
