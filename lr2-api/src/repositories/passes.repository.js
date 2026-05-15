@@ -1,6 +1,7 @@
 const { all, get, run, escapeSql } = require("../db/dbClient");
 
-async function getAll({ reason } = {}) {
+async function getAll({ reason, limit } = {}) {
+  const options = { limit };
   let sql = `
     SELECT p.*, u.fullName as studentName, r.number as roomNumber 
     FROM Passes p
@@ -11,7 +12,8 @@ async function getAll({ reason } = {}) {
   if (reason) {
     sql += ` AND p.reason = '${escapeSql(reason)}'`;
   }
-  sql += ` ORDER BY p.id DESC;`;
+  const limit = Number(options.limit) || 50;
+  sql += ` ORDER BY p.id DESC LIMIT ${limit};`;
   return await all(sql);
 }
 

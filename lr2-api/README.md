@@ -1,62 +1,85 @@
-# Лабораторна робота №2 — Система пропусків REST API
+# Лабораторна робота №3 — Система пропусків REST API + SQLite
 
 ## Варіант №8: Система пропусків у комп'ютерний клас
 
-### Запуск
+---
+
+## Запуск
 
 ```bash
 npm install
-npm run dev      # режим розробки (з автоперезапуском)
+npm run dev      # режим розробки (nodemon)
 npm start        # звичайний запуск
 ```
 
-Сервер запускається на `http://localhost:3000`
+База даних створюється автоматично при першому запуску за шляхом `./data/app.db`.  
+Файл `.db` **не зберігається в репозиторії** (`.gitignore`).
+`
+### Ініціалізація тестових даних (seed)
+
+```bash
+node src/db/seed.js
+```
 
 ---
 
-## Реалізовані сутності
+## Схема бази даних
 
-### Users (Користувачі)
-| Поле      | Тип    | Опис                      |
-|-----------|--------|---------------------------|
-| id        | string | UUID, генерується сервером |
-| fullName  | string | ПІБ (мін. 2 символи)       |
-| email     | string | Унікальна email-адреса     |
-| role      | string | Роль (напр. "Студент")     |
-| createdAt | string | ISO дата створення         |
+### Таблиці та зв'язки
 
-### Passes (Пропуски)
-| Поле        | Тип    | Опис                                                                |
-|-------------|--------|---------------------------------------------------------------------|
-| id          | string | UUID, генерується сервером                                          |
-| studentName | string | ПІБ студента (мін. 2 символи)                                       |
-| reason      | string | Причина: "Навчання", "Лабораторна робота", "Робота над проектом", "Технічне обслуговування" |
-| validUntil  | string | Дата дії YYYY-MM-DD (не в минулому)                                 |
-| issuerName  | string | ПІБ викладача (мін. 2 символи)                                      |
-| comment     | string | Коментар (до 500 символів, необов'язково)                           |
-| createdAt   | string | ISO дата створення                                                  |
+**Users** — користувачі системи
+| Поле      | Тип     | Обмеження                                  |
+|-----------|---------|--------------------------------------------|
+| id        | INTEGER | PRIMARY KEY                                |
+| fullName  | TEXT    | NOT NULL                                   |
+| email     | TEXT    | NOT NULL, UNIQUE                           |
+| role      | TEXT    | NOT NULL, CHECK IN ('Студент','Викладач','Адмін') |
+| createdAt | TEXT    | NOT NULL (ISO формат)                      |
+
+**Rooms** — аудиторії
+| Поле     | Тип     | Обмеження              |
+|----------|---------|------------------------|
+| id       | INTEGER | PRIMARY KEY            |
+| number   | TEXT    | NOT NULL, UNIQUE       |
+| capacity | INTEGER | NOT NULL, CHECK (> 0)  |
+
+**Passes** — пропуски
+| Поле       | Тип     | Обмеження                                                                 |
+|------------|---------|---------------------------------------------------------------------------|
+| id         | INTEGER | PRIMARY KEY                                                               |
+| userId     | INTEGER | NOT NULL, FK → Users(id) ON DELETE CASCADE                               |
+| roomId     | INTEGER | NOT NULL, FK → Rooms(id) ON DELETE CASCADE                               |
+| reason     | TEXT    | NOT NULL, CHECK IN ('Навчання','Лабораторна робота','Робота над проектом','Технічне обслуговування') |
+| validUntil | TEXT    | NOT NULL                                                                  |
+| issuerName | TEXT    | NOT NULL                                                                  |
+| comment    | TEXT    | nullable                                                                  |
+| createdAt  | TEXT    | NOT NULL (ISO формат)                                                     |
+
+### Зв'язки
+- `Users` 1:N `Passes` — один користувач може мати багато пропусків
+- `Rooms` 1:N `Passes` — одна аудиторія може мати багато пропусків
+- При видаленні User або Room — всі пов'язані Passes видаляються (CASCADE)
+
+### Міграції
+Схема керується через папку `src/db/migrations/`. При старті застосунок застосовує лише нові міграції (фіксація в таблиці `schema_migrations`).
 
 ---
 
 ## Маршрути API
 
 ### Users
-```
 GET    /api/users          — список користувачів
 GET    /api/users/:id      — користувач за ID
 POST   /api/users          — створити користувача
 PUT    /api/users/:id      — оновити користувача
 DELETE /api/users/:id      — видалити користувача
-```
 
 ### Passes
-```
-GET    /api/passes                        — список пропусків (підтримує ?reason=...&studentName=...)
-GET    /api/passes/:id                    — пропуск за ID
-POST   /api/passes                        — створити пропуск
-PUT    /api/passes/:id                    — оновити пропуск
-DELETE /api/passes/:id                    — видалити пропуск
-```
+GET    /api/passes                   — список пропусків (?reason=...&limit=...)
+GET    /api/passes/:id               — пропуск за ID
+POST   /api/passes                   — створити пропуск
+PUT    /api/passes/:id               — оновити пропуск
+DELETE /api/passes/:id               — видалити пропуск
 
 ---
 
@@ -67,78 +90,35 @@ DELETE /api/passes/:id                    — видалити пропуск
 curl -i http://localhost:3000/health
 ```
 
----
-
-### Users
-
-#### Створити користувача (успіх → 201)
+### Створити користувача (201)
 ```bash
 curl -i -X POST http://localhost:3000/api/users \
   -H "Content-Type: application/json" \
   -d "{\"fullName\":\"Іванов Іван Іванович\",\"email\":\"ivan@example.com\",\"role\":\"Студент\"}"
 ```
 
-#### Створити з помилкою валідації (→ 400)
+### Помилка валідації (400)
 ```bash
 curl -i -X POST http://localhost:3000/api/users \
   -H "Content-Type: application/json" \
   -d "{\"email\":\"not-an-email\",\"role\":\"Студент\"}"
 ```
 
-#### Список користувачів (→ 200)
+### Список пропусків з фільтром і лімітом (WHERE + ORDER BY + LIMIT)
 ```bash
-curl -i http://localhost:3000/api/users
+curl -i "http://localhost:3000/api/passes?reason=Навчання&limit=5"
 ```
 
-#### Отримати за ID (→ 200 або 404)
+### Дублікат email (409)
 ```bash
-curl -i http://localhost:3000/api/users/<ID>
-```
-
-#### Оновити (→ 200)
-```bash
-curl -i -X PUT http://localhost:3000/api/users/<ID> \
+curl -i -X POST http://localhost:3000/api/users \
   -H "Content-Type: application/json" \
-  -d "{\"fullName\":\"Петренко Петро Петрович\"}"
+  -d "{\"fullName\":\"Інший\",\"email\":\"ivan@example.com\",\"role\":\"Студент\"}"
 ```
 
-#### Видалити (→ 204)
+### Неіснуючий ID (404)
 ```bash
-curl -i -X DELETE http://localhost:3000/api/users/<ID>
-```
-
----
-
-### Passes
-
-#### Створити пропуск (→ 201)
-```bash
-curl -i -X POST http://localhost:3000/api/passes \
-  -H "Content-Type: application/json" \
-  -d "{\"studentName\":\"Коваль Олена\",\"reason\":\"Навчання\",\"validUntil\":\"2026-06-30\",\"issuerName\":\"Шевченко Т.Г.\",\"comment\":\"Доступ до ПК №5\"}"
-```
-
-#### Створити з невірною причиною (→ 400)
-```bash
-curl -i -X POST http://localhost:3000/api/passes \
-  -H "Content-Type: application/json" \
-  -d "{\"studentName\":\"Коваль Олена\",\"reason\":\"Відпочинок\",\"validUntil\":\"2026-06-30\",\"issuerName\":\"Шевченко Т.Г.\"}"
-```
-
-#### Список пропусків з фільтром (→ 200)
-```bash
-curl -i "http://localhost:3000/api/passes?reason=Навчання"
-curl -i "http://localhost:3000/api/passes?studentName=Коваль"
-```
-
-#### Видалити (→ 204)
-```bash
-curl -i -X DELETE http://localhost:3000/api/passes/<ID>
-```
-
-#### Неіснуючий ID (→ 404)
-```bash
-curl -i http://localhost:3000/api/passes/non-existent-id
+curl -i http://localhost:3000/api/passes/99999
 ```
 
 ---
