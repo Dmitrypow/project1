@@ -1,0 +1,81 @@
+import { Request, Response, NextFunction } from "express";
+import * as passesService from "../services/passes.service";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { ApiError } from "../middleware/error-handler.middleware";
+import {
+  validateCreatePassDto,
+  parseCreatePassDto,
+  validateUpdatePassDto,
+  parseUpdatePassDto,
+  toPassResponseDto,
+} from "../dtos/passes.dto";
+
+export async function getAll(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const passes = await passesService.getAll(req.query as Record<string, string>);
+    res.status(200).json({ items: passes.map(toPassResponseDto) });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getById(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const pass = await passesService.getById(req.params.id);
+    res.status(200).json(toPassResponseDto(pass));
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function create(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const errors = validateCreatePassDto(req.body as Record<string, unknown>);
+    if (errors.length > 0) throw new ApiError(400, "VALIDATION_ERROR", "Invalid request body", errors);
+    const dto = parseCreatePassDto(req.body as Record<string, unknown>);
+    const pass = await passesService.create(dto);
+    res.status(201).json(toPassResponseDto(pass));
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function update(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const errors = validateUpdatePassDto(req.body as Record<string, unknown>);
+    if (errors.length > 0) throw new ApiError(400, "VALIDATION_ERROR", "Invalid request body", errors);
+    const dto = parseUpdatePassDto(req.body as Record<string, unknown>);
+    const pass = await passesService.update(req.params.id, dto);
+    res.status(200).json(toPassResponseDto(pass));
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function remove(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    await passesService.remove(req.params.id);
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getStats(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const stats = await passesService.getStats();
+    res.status(200).json({ data: stats });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function search(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const q = String(req.query.q ?? "");
+    const passes = await passesService.search(q);
+    res.status(200).json({ items: passes, _warning: "⚠️ SQL Injection demo endpoint — not safe for production" });
+  } catch (err) {
+    next(err);
+  }
+}

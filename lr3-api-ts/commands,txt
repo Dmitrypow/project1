@@ -1,0 +1,155 @@
+Перевірка що сервер живий — 200
+
+curl.exe -i http://localhost:3000/health
+
+
+Users
+
+список
+
+curl.exe -i http://localhost:3000/api/users
+
+
+фільтр 
+
+curl.exe -i "http://localhost:3000/api/users?role=Студент&sortBy=fullName&sortDir=asc"
+
+
+пагінація
+
+curl.exe -i "http://localhost:3000/api/users?page=1&pageSize=2"
+
+
+GET за id
+
+curl.exe -i http://localhost:3000/api/users/1
+
+
+GET за id (404)
+
+curl.exe -i http://localhost:3000/api/users/9999
+
+
+POST (201)
+
+curl.exe -i -X POST http://localhost:3000/api/users -H "Content-Type: application/json" -d "{\"fullName\":\"Новий Користувач\",\"email\":\"new@test.com\",\"role\":\"Студент\"}"
+
+
+POST — валідація (400)
+
+curl.exe -i -X POST http://localhost:3000/api/users -H "Content-Type: application/json" -d "{\"fullName\":\"А\",\"email\":\"не-пошта\"}"
+
+
+POST — дублікат email (409)
+
+curl.exe -i -X POST http://localhost:3000/api/users -H "Content-Type: application/json" -d "{\"fullName\":\"Іванов\",\"email\":\"ivanov@test.com\",\"role\":\"Студент\"}"
+
+
+Оновлення імені та ролі — 200
+
+curl.exe -i -X PUT http://localhost:3000/api/users/2 -H "Content-Type: application/json" -d "{\"fullName\":\"Петренко Оновлена\",\"role\":\"Викладач\"}"
+
+
+Видалення користувача — 204
+
+curl.exe -i -X DELETE http://localhost:3000/api/users/5
+
+
+
+Rooms
+
+Список всіх аудиторій — 200
+
+curl.exe -i http://localhost:3000/api/rooms
+
+
+Створення нової аудиторії — 201
+
+curl.exe -i -X POST http://localhost:3000/api/rooms -H "Content-Type: application/json" -d "{\"number\":\"401-В\",\"capacity\":18}"
+
+
+Дублікат номеру аудиторії (вже є 301-A в seed) — 409
+
+curl.exe -i -X POST http://localhost:3000/api/rooms -H "Content-Type: application/json" -d "{\"number\":\"301-A\",\"capacity\":5}"
+
+
+Оновлення місткості — 200
+
+curl.exe -i -X PUT http://localhost:3000/api/rooms/1 -H "Content-Type: application/json" -d "{\"capacity\":30}"
+
+
+Видалення аудиторії — 204
+
+curl.exe -i -X DELETE http://localhost:3000/api/rooms/3
+
+
+Passes
+
+Список пропусків з JOIN (видно studentName + roomNumber) — 200
+
+curl.exe -i http://localhost:3000/api/passes
+
+
+Фільтр по причині — 200
+
+curl.exe -i "http://localhost:3000/api/passes?reason=Навчання"
+
+
+Сортування по даті + пагінація — 200
+
+curl.exe -i "http://localhost:3000/api/passes?sortBy=validUntil&sortDir=asc&page=1&pageSize=3"
+
+
+Пропуск за id — 200
+
+curl.exe -i http://localhost:3000/api/passes/1
+
+
+Створення пропуску — 201
+
+curl.exe -i -X POST http://localhost:3000/api/passes -H "Content-Type: application/json" -d "{\"userId\":2,\"roomId\":1,\"reason\":\"Навчання\",\"validUntil\":\"2026-12-31\",\"issuerName\":\"Коваленко М.П.\",\"comment\":\"тест\"}"
+
+
+Валідація: дата в минулому — 400
+
+curl.exe -i -X POST http://localhost:3000/api/passes -H "Content-Type: application/json" -d "{\"userId\":1,\"roomId\":1,\"reason\":\"Навчання\",\"validUntil\":\"2020-01-01\",\"issuerName\":\"Тест\"}"
+
+
+Валідація: причина не зі списку — 400
+
+curl.exe -i -X POST http://localhost:3000/api/passes -H "Content-Type: application/json" -d "{\"userId\":1,\"roomId\":1,\"reason\":\"Щось інше\",\"validUntil\":\"2026-12-31\",\"issuerName\":\"Тест\"}"
+
+
+Неіснуючий userId — порушення FOREIGN KEY — 40
+
+curl.exe -i -X POST http://localhost:3000/api/passes -H "Content-Type: application/json" -d "{\"userId\":9999,\"roomId\":1,\"reason\":\"Навчання\",\"validUntil\":\"2026-12-31\",\"issuerName\":\"Тест\"}"
+
+
+Оновлення причини пропуску — 200
+
+curl.exe -i -X PUT http://localhost:3000/api/passes/1 -H "Content-Type: application/json" -d "{\"reason\":\"Робота над проектом\"}"
+
+
+Видалення пропуску — 204
+
+curl.exe -i -X DELETE http://localhost:3000/api/passes/7
+
+
+Агрегація: кількість пропусків по причинах + середнє на юзера — 200
+
+curl.exe -i http://localhost:3000/api/passes/stats
+
+
+SQLi demo: нормальний пошук по імені видавця — 200
+
+curl.exe -i "http://localhost:3000/api/passes/search?q=Коваленко"
+
+
+SQLi demo: ін'єкція що ламає WHERE і повертає ВСІ записи — 200 (DANGERIUS)
+
+curl.exe -i "http://localhost:3000/api/passes/search?q=' OR '1'='1"
+
+
+Каскадне видалення: видаляємо юзера — його пропуски теж зникають — 204
+
+curl.exe -i -X DELETE http://localhost:3000/api/users/2
