@@ -1,7 +1,7 @@
 import * as passesRepo from "../repositories/passes.repository";
 import { ApiError } from "../middleware/error-handler.middleware";
 import { Pass, CreatePassDto, UpdatePassDto } from "../dtos/passes.dto";
-import { PassFilters, PassStats } from "../repositories/passes.repository";
+import { PassFilters, PassStats, TopStudentByReason } from "../repositories/passes.repository";
 
 export async function getAll(filters: PassFilters): Promise<Pass[]> {
   return await passesRepo.getAll(filters);
@@ -50,6 +50,10 @@ export async function remove(id: string): Promise<void> {
 
 export async function getStats(): Promise<PassStats> {
   return await passesRepo.getStats();
+}
+
+export async function getTopStudents(): Promise<TopStudentByReason[]> {
+  return await passesRepo.getTopStudentsByReason();
 }
 
 export async function search(q: string): Promise<Pass[]> {

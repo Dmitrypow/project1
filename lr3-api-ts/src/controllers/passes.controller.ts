@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import * as passesService from "../services/passes.service";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ApiError } from "../middleware/error-handler.middleware";
 import {
   validateCreatePassDto,
@@ -56,6 +55,27 @@ export async function remove(req: Request, res: Response, next: NextFunction): P
   try {
     await passesService.remove(req.params.id);
     res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getTopStudents(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const data = await passesService.getTopStudents();
+
+    const grouped: Record<string, { rank: number; userId: number; studentName: string; passCount: number }[]> = {};
+    for (const row of data) {
+      if (!grouped[row.reason]) grouped[row.reason] = [];
+      grouped[row.reason].push({
+        rank: row.rank,
+        userId: row.userId,
+        studentName: row.studentName,
+        passCount: row.passCount,
+      });
+    }
+
+    res.status(200).json({ data: grouped });
   } catch (err) {
     next(err);
   }

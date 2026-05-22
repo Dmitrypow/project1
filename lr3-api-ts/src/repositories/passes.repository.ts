@@ -59,7 +59,6 @@ export async function remove(id: number | string): Promise<boolean> {
   return result.changes > 0;
 }
 
-// ─── Агрегація: статистика по пропусках ──────────────────────────────────────
 export interface PassStats {
   totalPasses: number;
   byReason: { reason: string; count: number }[];
@@ -91,13 +90,44 @@ export async function getStats(): Promise<PassStats> {
     avgPassesPerUser: Math.round(avg * 100) / 100,
   };
 }
+export interface TopStudentByReason {
+  reason: string;
+  rank: number;
+  studentName: string;
+  userId: number;
+  passCount: number;
+}
 
-// ─── Пошук (НАВМИСНО вразливий до SQLi — демо для ЛР) ──────────────────────
-// УВАГА: цей endpoint використовує рядкову конкатенацію.
-// Це НЕБЕЗПЕЧНО і зроблено навмисно для демонстрації SQL injection.
-// Буде виправлено у ЛР5 через параметризовані запити.
+export async function getTopStudentsByReason(): Promise<TopStudentByReason[]> {
+  const sql = `
+    WITH counts AS (
+      SELECT
+        p.reason,
+        p.userId,
+        u.fullName AS studentName,
+        COUNT(*) AS passCount
+      FROM Passes p
+      JOIN Users u ON p.userId = u.id
+      GROUP BY p.reason, p.userId
+    ),
+    ranked AS (
+      SELECT
+        reason,
+        userId,
+        studentName,
+        passCount,
+        ROW_NUMBER() OVER (PARTITION BY reason ORDER BY passCount DESC) AS rank
+      FROM counts
+    )
+    SELECT reason, rank, userId, studentName, passCount
+    FROM ranked
+    WHERE rank <= 3
+    ORDER BY reason ASC, rank ASC;
+  `;
+  return await all<TopStudentByReason>(sql);
+}
+
 export async function searchByIssuer(q: string): Promise<Pass[]> {
-  // ⚠️ НЕБЕЗПЕЧНО: q вставляється в SQL без екранування
   const sql = `
     SELECT p.*, u.fullName as studentName, r.number as roomNumber
     FROM Passes p
@@ -109,3 +139,6 @@ export async function searchByIssuer(q: string): Promise<Pass[]> {
   `;
   return await all<Pass>(sql);
 }
+
+
+
