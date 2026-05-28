@@ -3,101 +3,88 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Система пропусків (Варіант №8)</title>
-  
+  <title>Система пропусків у бібліотеку</title>
   <link rel="stylesheet" href="styles.css" />
-  <script src="app.js" defer></script>
+  <script type="module" src="js/main.js" defer></script>
 </head>
 <body>
+  <div id="notice" style="display: none; position: fixed; top: 10px; right: 10px; padding: 15px; border-radius: 5px; color: white; z-index: 1000;"></div>
 
   <header>
     <div class="container">
-      <h1>Система пропусків у комп'ютерний клас</h1>
+      <h1>Система пропусків у бібліотеку</h1>
     </div>
   </header>
 
   <main class="container">
-    
     <section id="form-section">
-      <h2 id="formTitle">Новий пропуск</h2>
-      
+      <h2>Новий пропуск</h2>
       <form id="passForm">
         <div class="field">
-          <label for="userNameInput">Студент (ПІБ)</label>
-          <input id="userNameInput" type="text" placeholder="Іванов Іван Іванович" />
-          <p class="error-text" id="userNameError"></p>
+          <label for="userIdSelect">Студент / Викладач</label>
+          <select id="userIdSelect" required>
+            <option value="">Завантаження...</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="zoneIdSelect">Зал бібліотеки</label>
+          <select id="zoneIdSelect" required>
+            <option value="">Завантаження...</option>
+          </select>
         </div>
 
         <div class="field">
           <label for="reasonSelect">Причина доступу</label>
-          <select id="reasonSelect">
+          <select id="reasonSelect" required>
             <option value="">Оберіть причину</option>
             <option value="Навчання">Навчання</option>
             <option value="Лабораторна робота">Лабораторна робота</option>
             <option value="Робота над проектом">Робота над проектом</option>
             <option value="Технічне обслуговування">Технічне обслуговування</option>
           </select>
-          <p class="error-text" id="reasonError"></p>
         </div>
 
         <div class="field">
           <label for="validDateInput">Дійсний до (дата)</label>
-          <input id="validDateInput" type="date" />
-          <p class="error-text" id="validDateError"></p>
+          <input id="validDateInput" type="date" required />
         </div>
 
         <div class="field">
-          <label for="commentInput">Коментар</label>
-          <textarea id="commentInput" rows="3" placeholder="Додаткова інформація..."></textarea>
-          <p class="error-text" id="commentError"></p>
+          <label for="issuerInput">Видав (ПІБ)</label>
+          <input id="issuerInput" type="text" required />
         </div>
 
         <div class="field">
-          <label for="issuerInput">Видав (ПІБ викладача)</label>
-          <input id="issuerInput" type="text" />
-          <p class="error-text" id="issuerError"></p>
+          <label for="commentInput">Коментар (необов'язково)</label>
+          <textarea id="commentInput" rows="3"></textarea>
         </div>
 
         <div class="buttons">
-          <button type="submit" id="submitBtn">Зберегти</button>
-          <button type="button" id="cancelEditBtn" style="display: none;">Скасувати редагування</button>
+          <button type="submit" id="submitBtn">Створити пропуск</button>
         </div>
       </form>
     </section>
 
     <section id="list-section">
       <h2>Реєстр виданих пропусків</h2>
-
-      <div class="controls">
-        <input type="text" id="searchInput" placeholder="Пошук за студентом..." />
-        <select id="filterReason">
-          <option value="">Усі причини</option>
-          <option value="Навчання">Навчання</option>
-          <option value="Лабораторна робота">Лабораторна робота</option>
-          <option value="Робота над проектом">Робота над проектом</option>
-          <option value="Технічне обслуговування">Технічне обслуговування</option>
-        </select>
-        <button type="button" id="sortDateBtn">Сортувати за датою</button>
-      </div>
-
+      <div id="listStatus" style="margin-bottom: 15px; font-weight: bold;"></div>
       <table id="passesTable">
         <thead>
           <tr>
-            <th style="cursor:pointer" data-sort="index"># <span class="sort-icon"></span></th>
-            <th style="cursor:pointer" data-sort="userName">Студент <span class="sort-icon"></span></th>
-            <th style="cursor:pointer" data-sort="reason">Причина <span class="sort-icon"></span></th>
-            <th style="cursor:pointer" data-sort="validDate">Дата дії <span class="sort-icon"></span></th>
-            <th style="cursor:pointer" data-sort="comment">Коментар <span class="sort-icon"></span></th>
-            <th style="cursor:pointer" data-sort="issuer">Видав <span class="sort-icon"></span></th>
+            <th>#</th>
+            <th>Користувач</th>
+            <th>Зал</th>
+            <th>Причина</th>
+            <th>Дата дії</th>
+            <th>Видав</th>
             <th>Дії</th>
           </tr>
         </thead>
         <tbody id="passesTableBody">
-          </tbody>
+        </tbody>
       </table>
     </section>
-
   </main>
-
 </body>
 </html>

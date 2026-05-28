@@ -12,19 +12,14 @@ async function seed(): Promise<void> {
   await run(`INSERT OR IGNORE INTO Users (id, email, fullName, role, createdAt) VALUES (4, 'shevchenko@test.com', 'Шевченко Тарас Григорович', 'Адмін', '${now}');`);
   await run(`INSERT OR IGNORE INTO Users (id, email, fullName, role, createdAt) VALUES (5, 'bondarenko@test.com', 'Бондаренко Світлана', 'Студент', '${now}');`);
 
-  // rooms
-  await run(`INSERT OR IGNORE INTO Rooms (id, number, capacity) VALUES (1, '301-A', 15);`);
-  await run(`INSERT OR IGNORE INTO Rooms (id, number, capacity) VALUES (2, '204-Б', 20);`);
-  await run(`INSERT OR IGNORE INTO Rooms (id, number, capacity) VALUES (3, '102', 30);`);
+  // zones
+  await run(`INSERT OR IGNORE INTO Zones (id, name, description) VALUES (1, 'Читальний зал', 'Тиха зона для роботи з книгами');`);
+  await run(`INSERT OR IGNORE INTO Zones (id, name, description) VALUES (2, 'Медіатека', 'Комп''ютери та доступ до інтернету');`);
+  await run(`INSERT OR IGNORE INTO Zones (id, name, description) VALUES (3, 'Коворкінг', 'Зона для групових проектів');`);
 
   // passes
-  await run(`INSERT OR IGNORE INTO Passes (userId, roomId, reason, validUntil, issuerName, comment, createdAt) VALUES (1, 1, 'Лабораторна робота', '2026-06-01', 'Коваленко М.П.', 'Доступ до ПК №3', '${now}');`);
-  await run(`INSERT OR IGNORE INTO Passes (userId, roomId, reason, validUntil, issuerName, comment, createdAt) VALUES (2, 1, 'Навчання', '2026-06-15', 'Коваленко М.П.', NULL, '${now}');`);
-  await run(`INSERT OR IGNORE INTO Passes (userId, roomId, reason, validUntil, issuerName, comment, createdAt) VALUES (1, 2, 'Робота над проектом', '2026-07-01', 'Шевченко Т.Г.', 'Курсова робота', '${now}');`);
-  await run(`INSERT OR IGNORE INTO Passes (userId, roomId, reason, validUntil, issuerName, comment, createdAt) VALUES (3, 3, 'Технічне обслуговування', '2026-05-20', 'Шевченко Т.Г.', 'Планова перевірка', '${now}');`);
-  await run(`INSERT OR IGNORE INTO Passes (userId, roomId, reason, validUntil, issuerName, comment, createdAt) VALUES (5, 2, 'Навчання', '2026-06-30', 'Коваленко М.П.', NULL, '${now}');`);
-  await run(`INSERT OR IGNORE INTO Passes (userId, roomId, reason, validUntil, issuerName, comment, createdAt) VALUES (2, 3, 'Лабораторна робота', '2026-06-10', 'Коваленко М.П.', 'ПК №7', '${now}');`);
-  await run(`INSERT OR IGNORE INTO Passes (userId, roomId, reason, validUntil, issuerName, comment, createdAt) VALUES (4, 1, 'Технічне обслуговування', '2026-05-25', 'Шевченко Т.Г.', NULL, '${now}');`);
+  await run(`INSERT OR IGNORE INTO Passes (userId, zoneId, reason, validUntil, issuerName, comment, createdAt) VALUES (1, 1, 'Навчання', '2026-06-01', 'Коваленко М.П.', 'Доступ до Читального залу', '${now}');`);
+  await run(`INSERT OR IGNORE INTO Passes (userId, zoneId, reason, validUntil, issuerName, comment, createdAt) VALUES (2, 2, 'Лабораторна робота', '2026-06-15', 'Коваленко М.П.', NULL, '${now}');`);
 
   console.log("Seed completed: 15 rows added.");
 }

@@ -12,9 +12,9 @@ export type PassReason = (typeof ALLOWED_REASONS)[number];
 export interface Pass {
   id: number;
   userId: number;
-  roomId: number;
+  zoneId: number;
   studentName?: string;
-  roomNumber?: string;
+  zoneName?: string;
   reason: PassReason;
   validUntil: string;
   issuerName: string;
@@ -26,7 +26,7 @@ export interface Pass {
 
 export interface CreatePassDto {
   userId: number;
-  roomId: number;
+  zoneId: number;
   reason: PassReason;
   validUntil: string;
   issuerName: string;
@@ -35,7 +35,7 @@ export interface CreatePassDto {
 
 export interface UpdatePassDto {
   userId?: number;
-  roomId?: number;
+  zoneId?: number;
   reason?: PassReason;
   validUntil?: string;
   issuerName?: string;
@@ -45,9 +45,9 @@ export interface UpdatePassDto {
 export interface PassResponseDto {
   id: number;
   userId: number;
-  roomId: number;
+  zoneId: number;
   studentName: string | undefined;
-  roomNumber: string | undefined;
+  zoneName: string | undefined;
   reason: string;
   validUntil: string;
   issuerName: string;
@@ -100,8 +100,8 @@ export function validateCreatePassDto(body: Record<string, unknown>): Validation
   const errors: ValidationError[] = [];
   const e1 = requireNumber(body.userId, "userId");
   if (e1) errors.push(e1);
-  const e1room = requireNumber(body.roomId, "roomId");
-  if (e1room) errors.push(e1room);
+  const e1zone = requireNumber(body.zoneId, "zoneId");
+  if (e1zone) errors.push(e1zone);
   const e2 = requireEnum(body.reason, "reason", ALLOWED_REASONS);
   if (e2) errors.push(e2);
   const e3 = requireIsoDate(body.validUntil, "validUntil");
@@ -114,7 +114,7 @@ export function validateCreatePassDto(body: Record<string, unknown>): Validation
 export function parseCreatePassDto(body: Record<string, unknown>): CreatePassDto {
   return {
     userId: body.userId as number,
-    roomId: body.roomId as number,
+    zoneId: body.zoneId as number,
     reason: body.reason as PassReason,
     validUntil: body.validUntil as string,
     issuerName: (body.issuerName as string).trim(),
@@ -141,9 +141,9 @@ export function toPassResponseDto(pass: Pass): PassResponseDto {
   return {
     id: pass.id,
     userId: pass.userId,
-    roomId: pass.roomId,
+    zoneId: pass.zoneId,
     studentName: pass.studentName,
-    roomNumber: pass.roomNumber,
+    zoneName: pass.zoneName,
     reason: pass.reason,
     validUntil: pass.validUntil,
     issuerName: pass.issuerName,

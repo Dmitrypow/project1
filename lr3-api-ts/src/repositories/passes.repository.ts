@@ -9,10 +9,10 @@ export interface PassFilters {
 export async function getAll(filters: PassFilters = {}): Promise<Pass[]> {
   const maxRows = Number(filters.limit) || 50;
   let sql = `
-    SELECT p.*, u.fullName as studentName, r.number as roomNumber
+    SELECT p.*, u.fullName as studentName, z.name as zoneName
     FROM Passes p
     JOIN Users u ON p.userId = u.id
-    JOIN Rooms r ON p.roomId = r.id
+    JOIN Zones z ON p.zoneId = z.id
     WHERE 1=1
   `;
   if (filters.reason) {
@@ -29,8 +29,8 @@ export async function getById(id: number | string): Promise<Pass | undefined> {
 export async function add(dto: CreatePassDto): Promise<Pass | undefined> {
   const now = new Date().toISOString();
   const sql = `
-    INSERT INTO Passes (userId, roomId, reason, validUntil, issuerName, comment, createdAt)
-    VALUES (${Number(dto.userId)}, ${Number(dto.roomId)}, '${escapeSql(dto.reason)}', '${escapeSql(dto.validUntil)}', '${escapeSql(dto.issuerName)}', '${escapeSql(dto.comment ?? "")}', '${now}');
+    INSERT INTO Passes (userId, zoneId, reason, validUntil, issuerName, comment, createdAt)
+    VALUES (${Number(dto.userId)}, ${Number(dto.zoneId)}, '${escapeSql(dto.reason)}', '${escapeSql(dto.validUntil)}', '${escapeSql(dto.issuerName)}', '${escapeSql(dto.comment ?? "")}', '${now}');
   `;
   const result = await run(sql);
   return await getById(result.lastID);
@@ -39,7 +39,7 @@ export async function add(dto: CreatePassDto): Promise<Pass | undefined> {
 export async function update(id: number | string, dto: UpdatePassDto): Promise<Pass | undefined | null> {
   const updates: string[] = [];
   if (dto.userId !== undefined) updates.push(`userId = ${Number(dto.userId)}`);
-  if (dto.roomId !== undefined) updates.push(`roomId = ${Number(dto.roomId)}`);
+  if (dto.zoneId !== undefined) updates.push(`zoneId = ${Number(dto.zoneId)}`);
   if (dto.reason !== undefined) updates.push(`reason = '${escapeSql(dto.reason)}'`);
   if (dto.validUntil !== undefined) updates.push(`validUntil = '${escapeSql(dto.validUntil)}'`);
   if (dto.issuerName !== undefined) updates.push(`issuerName = '${escapeSql(dto.issuerName)}'`);
@@ -90,6 +90,7 @@ export async function getStats(): Promise<PassStats> {
     avgPassesPerUser: Math.round(avg * 100) / 100,
   };
 }
+
 export interface TopStudentByReason {
   reason: string;
   rank: number;
@@ -129,16 +130,13 @@ export async function getTopStudentsByReason(): Promise<TopStudentByReason[]> {
 
 export async function searchByIssuer(q: string): Promise<Pass[]> {
   const sql = `
-    SELECT p.*, u.fullName as studentName, r.number as roomNumber
+    SELECT p.*, u.fullName as studentName, z.name as zoneName
     FROM Passes p
     JOIN Users u ON p.userId = u.id
-    JOIN Rooms r ON p.roomId = r.id
+    JOIN Zones z ON p.zoneId = z.id
     WHERE p.issuerName LIKE '%${q}%'
     ORDER BY p.id DESC
     LIMIT 50;
   `;
   return await all<Pass>(sql);
 }
-
-
-
