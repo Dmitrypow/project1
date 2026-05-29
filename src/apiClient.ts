@@ -1,5 +1,5 @@
 import { API_BASE_URL } from "./config.js";
-import { ApiError, PassResponseDto, CreatePassDto, UserDto, ZoneDto } from "./dtos.js";
+import { ApiError, PassResponseDto, CreatePassDto, UpdatePassDto, UserDto, UserResponseDto, ZoneDto, CreateUserDto, UpdateUserDto, PassStatsDto, TopStudentsDto } from "./dtos.js";
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     const url = `${API_BASE_URL}${path}`;
@@ -67,4 +67,48 @@ export async function getUsers(): Promise<{ items: UserDto[] }> {
 
 export async function getZones(): Promise<{ items: ZoneDto[] }> {
     return await request<{ items: ZoneDto[] }>("/zones");
+}
+
+export async function getPassById(id: number): Promise<PassResponseDto> {
+    return await request<PassResponseDto>(`/passes/${id}`);
+}
+
+export async function updatePass(id: number, dto: UpdatePassDto): Promise<PassResponseDto> {
+    return await request<PassResponseDto>(`/passes/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dto),
+    });
+}
+
+export async function searchPasses(q: string): Promise<{ items: PassResponseDto[] }> {
+    return await request<{ items: PassResponseDto[] }>(`/passes/search?q=${encodeURIComponent(q)}`);
+}
+
+export async function getPassStats(): Promise<{ data: PassStatsDto }> {
+    return await request<{ data: PassStatsDto }>("/passes/stats");
+}
+
+export async function getTopStudents(): Promise<{ data: TopStudentsDto }> {
+    return await request<{ data: TopStudentsDto }>("/passes/top-students");
+}
+
+export async function createUser(dto: CreateUserDto): Promise<UserResponseDto> {
+    return await request<UserResponseDto>("/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dto),
+    });
+}
+
+export async function updateUser(id: number, dto: UpdateUserDto): Promise<UserResponseDto> {
+    return await request<UserResponseDto>(`/users/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dto),
+    });
+}
+
+export async function deleteUser(id: number): Promise<void> {
+    return await request<void>(`/users/${id}`, { method: "DELETE" });
 }

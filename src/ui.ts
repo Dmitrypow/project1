@@ -41,6 +41,7 @@ export function renderTable(passes: PassResponseDto[]) {
             <td>${item.validUntil}</td>
             <td>${item.issuerName}</td>
             <td>
+                <button type="button" class="edit-btn" data-id="${item.id}">Редагувати</button>
                 <button type="button" class="delete-btn" data-id="${item.id}">Видалити</button>
             </td>
         </tr>

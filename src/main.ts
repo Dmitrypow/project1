@@ -1,6 +1,6 @@
-import { getPasses, createPass, deletePass, getUsers, getZones } from "./apiClient.js";
+import { getPasses, createPass, deletePass, getUsers, getZones, updatePass, searchPasses, getPassStats, getTopStudents, createUser, updateUser, deleteUser } from "./apiClient.js";
 import { renderListStatus, renderTable, showNotice, setFormEnabled } from "./ui.js";
-import { CreatePassDto, ApiError } from "./dtos.js";
+import { CreatePassDto, UpdatePassDto, CreateUserDto, UpdateUserDto, ApiError } from "./dtos.js";
 
 async function loadSelectOptions() {
     try {
@@ -85,7 +85,48 @@ document.getElementById("passesTableBody")?.addEventListener("click", async (eve
             showNotice(`Помилка видалення: ${err.message}`, true);
         }
     }
+    else if (target.classList.contains("edit-btn")) {
+        const id = Number(target.dataset.id);
+        const reason = prompt("Нова причина (або Cancel щоб скасувати):");
+        if (reason === null) return;
+        try {
+            await updatePass(id, { reason });
+            showNotice("✏️ Пропуск оновлено");
+            await loadPasses();
+        } catch (e) {
+            const err = e as ApiError;
+            showNotice(`Помилка оновлення: ${err.message}`, true);
+        }
+    }
 });
 
 loadSelectOptions();
 loadPasses();
+
+document.getElementById("searchInput")?.addEventListener("input", async (e) => {
+    const q = (e.target as HTMLInputElement).value.trim();
+    if (q.length === 0) { await loadPasses(); return; }
+    if (q.length < 2) return;
+    renderListStatus("loading");
+    try {
+        const response = await searchPasses(q);
+        const passes = response.items;
+        if (!passes || passes.length === 0) { renderListStatus("empty"); }
+        else { renderListStatus("success"); renderTable(passes); }
+    } catch (e) {
+        renderListStatus("error", e as ApiError);
+    }
+});
+
+async function loadStats(): Promise<void> {
+    try {
+        const [statsRes, topRes] = await Promise.all([getPassStats(), getTopStudents()]);
+        const statsEl = document.getElementById("statsOutput");
+        if (statsEl) statsEl.textContent = JSON.stringify(statsRes.data, null, 2);
+        const topEl = document.getElementById("topStudentsOutput");
+        if (topEl) topEl.textContent = JSON.stringify(topRes.data, null, 2);
+    } catch (e) {
+        console.error("Не вдалося завантажити статистику", e);
+    }
+}
+loadStats();
