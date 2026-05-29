@@ -26,14 +26,12 @@
             <option value="">Завантаження...</option>
           </select>
         </div>
-
         <div class="field">
           <label for="zoneIdSelect">Зал бібліотеки</label>
           <select id="zoneIdSelect" required>
             <option value="">Завантаження...</option>
           </select>
         </div>
-
         <div class="field">
           <label for="reasonSelect">Причина доступу</label>
           <select id="reasonSelect" required>
@@ -44,26 +42,60 @@
             <option value="Технічне обслуговування">Технічне обслуговування</option>
           </select>
         </div>
-
         <div class="field">
           <label for="validDateInput">Дійсний до (дата)</label>
           <input id="validDateInput" type="date" required />
         </div>
-
         <div class="field">
           <label for="issuerInput">Видав (ПІБ)</label>
           <input id="issuerInput" type="text" required />
         </div>
-
         <div class="field">
           <label for="commentInput">Коментар (необов'язково)</label>
           <textarea id="commentInput" rows="3"></textarea>
         </div>
-
         <div class="buttons">
           <button type="submit" id="submitBtn">Створити пропуск</button>
         </div>
       </form>
+    </section>
+
+    <section id="users-section">
+      <h2>Управління користувачами</h2>
+      <form id="userForm">
+        <div class="field">
+          <label for="userFullName">ПІБ</label>
+          <input id="userFullName" type="text" required />
+        </div>
+        <div class="field">
+          <label for="userEmail">Email</label>
+          <input id="userEmail" type="email" required />
+        </div>
+        <div class="field">
+          <label for="userRole">Роль</label>
+          <select id="userRole" required>
+            <option value="">Оберіть роль</option>
+            <option value="Студент">Студент</option>
+            <option value="Викладач">Викладач</option>
+            <option value="Адмін">Адмін</option>
+          </select>
+        </div>
+        <div class="buttons">
+          <button type="submit" id="userSubmitBtn">Створити користувача</button>
+        </div>
+      </form>
+      <table id="usersTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>ПІБ</th>
+            <th>Email</th>
+            <th>Роль</th>
+            <th>Дії</th>
+          </tr>
+        </thead>
+        <tbody id="usersTableBody"></tbody>
+      </table>
     </section>
 
     <section id="search-section">
@@ -88,8 +120,7 @@
             <th>Дії</th>
           </tr>
         </thead>
-        <tbody id="passesTableBody">
-        </tbody>
+        <tbody id="passesTableBody"></tbody>
       </table>
     </section>
 

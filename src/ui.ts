@@ -35,8 +35,8 @@ export function renderTable(passes: PassResponseDto[]) {
     tbody.innerHTML = passes.map((item) => `
         <tr>
             <td>${item.id}</td>
-            <td>${item.studentName || 'Невідомо'}</td>
-            <td>${item.zoneName || 'Невідомо'}</td>
+            <td>${item.studentName || "Невідомо"}</td>
+            <td>${item.zoneName || "Невідомо"}</td>
             <td>${item.reason}</td>
             <td>${item.validUntil}</td>
             <td>${item.issuerName}</td>

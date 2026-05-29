@@ -3,9 +3,9 @@ import { ApiError, PassResponseDto, CreatePassDto, UpdatePassDto, UserDto, UserR
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     const url = `${API_BASE_URL}${path}`;
-    
+
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); 
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
     options.signal = controller.signal;
 
     let response: Response;
@@ -28,7 +28,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     }
 
     const rawText = await response.text();
-    
+
     if (response.ok) {
         if (!rawText) return null as unknown as T;
         try { return JSON.parse(rawText) as T; } catch { return rawText as unknown as T; }
@@ -49,6 +49,10 @@ export async function getPasses(): Promise<{ items: PassResponseDto[] }> {
     return await request<{ items: PassResponseDto[] }>("/passes");
 }
 
+export async function getPassById(id: number): Promise<PassResponseDto> {
+    return await request<PassResponseDto>(`/passes/${id}`);
+}
+
 export async function createPass(dto: CreatePassDto): Promise<PassResponseDto> {
     return await request<PassResponseDto>("/passes", {
         method: "POST",
@@ -57,28 +61,16 @@ export async function createPass(dto: CreatePassDto): Promise<PassResponseDto> {
     });
 }
 
-export async function deletePass(id: number): Promise<void> {
-    return await request<void>(`/passes/${id}`, { method: "DELETE" });
-}
-
-export async function getUsers(): Promise<{ items: UserDto[] }> {
-    return await request<{ items: UserDto[] }>("/users");
-}
-
-export async function getZones(): Promise<{ items: ZoneDto[] }> {
-    return await request<{ items: ZoneDto[] }>("/zones");
-}
-
-export async function getPassById(id: number): Promise<PassResponseDto> {
-    return await request<PassResponseDto>(`/passes/${id}`);
-}
-
 export async function updatePass(id: number, dto: UpdatePassDto): Promise<PassResponseDto> {
     return await request<PassResponseDto>(`/passes/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(dto),
     });
+}
+
+export async function deletePass(id: number): Promise<void> {
+    return await request<void>(`/passes/${id}`, { method: "DELETE" });
 }
 
 export async function searchPasses(q: string): Promise<{ items: PassResponseDto[] }> {
@@ -91,6 +83,10 @@ export async function getPassStats(): Promise<{ data: PassStatsDto }> {
 
 export async function getTopStudents(): Promise<{ data: TopStudentsDto }> {
     return await request<{ data: TopStudentsDto }>("/passes/top-students");
+}
+
+export async function getUsers(): Promise<{ items: UserDto[] }> {
+    return await request<{ items: UserDto[] }>("/users");
 }
 
 export async function createUser(dto: CreateUserDto): Promise<UserResponseDto> {
@@ -111,4 +107,8 @@ export async function updateUser(id: number, dto: UpdateUserDto): Promise<UserRe
 
 export async function deleteUser(id: number): Promise<void> {
     return await request<void>(`/users/${id}`, { method: "DELETE" });
+}
+
+export async function getZones(): Promise<{ items: ZoneDto[] }> {
+    return await request<{ items: ZoneDto[] }>("/zones");
 }
