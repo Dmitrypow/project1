@@ -87,6 +87,5 @@ document.getElementById("passesTableBody")?.addEventListener("click", async (eve
     }
 });
 
-// Ініціалізуємо додаток
 loadSelectOptions();
 loadPasses();
