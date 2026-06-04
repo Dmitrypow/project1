@@ -60,51 +60,6 @@
       </form>
     </section>
 
-    <section id="users-section">
-      <h2>Управління користувачами</h2>
-      <form id="userForm">
-        <div class="field">
-          <label for="userFullName">ПІБ</label>
-          <input id="userFullName" type="text" required />
-        </div>
-        <div class="field">
-          <label for="userEmail">Email</label>
-          <input id="userEmail" type="email" required />
-        </div>
-        <div class="field">
-          <label for="userRole">Роль</label>
-          <select id="userRole" required>
-            <option value="">Оберіть роль</option>
-            <option value="Студент">Студент</option>
-            <option value="Викладач">Викладач</option>
-            <option value="Адмін">Адмін</option>
-          </select>
-        </div>
-        <div class="buttons">
-          <button type="submit" id="userSubmitBtn">Створити користувача</button>
-        </div>
-      </form>
-      <table id="usersTable">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>ПІБ</th>
-            <th>Email</th>
-            <th>Роль</th>
-            <th>Дії</th>
-          </tr>
-        </thead>
-        <tbody id="usersTableBody"></tbody>
-      </table>
-    </section>
-
-    <section id="search-section">
-      <h2>Пошук пропусків</h2>
-      <div class="field">
-        <input id="searchInput" type="text" placeholder="Введіть ім'я або причину..." />
-      </div>
-    </section>
-
     <section id="list-section">
       <h2>Реєстр виданих пропусків</h2>
       <div id="listStatus" style="margin-bottom: 15px; font-weight: bold;"></div>
@@ -122,13 +77,6 @@
         </thead>
         <tbody id="passesTableBody"></tbody>
       </table>
-    </section>
-
-    <section id="stats-section">
-      <h2>Статистика</h2>
-      <pre id="statsOutput"></pre>
-      <h2>Топ студентів по причинах</h2>
-      <pre id="topStudentsOutput"></pre>
     </section>
   </main>
 </body>

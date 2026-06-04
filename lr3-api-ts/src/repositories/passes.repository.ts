@@ -1,4 +1,4 @@
-import { all, get, run, escapeSql } from "../db/dbClient";
+import { all, get, run } from "../db/dbClient";
 import { Pass, CreatePassDto, UpdatePassDto } from "../dtos/passes.dto";
 
 export interface PassFilters {
@@ -8,6 +8,8 @@ export interface PassFilters {
 
 export async function getAll(filters: PassFilters = {}): Promise<Pass[]> {
   const maxRows = Number(filters.limit) || 50;
+  const params: unknown[] = [];
+
   let sql = `
     SELECT p.*, u.fullName as studentName, z.name as zoneName
     FROM Passes p
@@ -15,47 +17,82 @@ export async function getAll(filters: PassFilters = {}): Promise<Pass[]> {
     JOIN Zones z ON p.zoneId = z.id
     WHERE 1=1
   `;
+
   if (filters.reason) {
-    sql += ` AND p.reason = '${escapeSql(filters.reason)}'`;
+    sql += ` AND p.reason = ?`;
+    params.push(filters.reason);
   }
+
   sql += ` ORDER BY p.id DESC LIMIT ${maxRows};`;
-  return await all<Pass>(sql);
+
+  return await all<Pass>(sql, params);
 }
 
 export async function getById(id: number | string): Promise<Pass | undefined> {
-  return await get<Pass>(`SELECT * FROM Passes WHERE id = ${Number(id)};`);
+  return await get<Pass>(`SELECT * FROM Passes WHERE id = ?;`, [Number(id)]);
 }
 
 export async function add(dto: CreatePassDto): Promise<Pass | undefined> {
   const now = new Date().toISOString();
   const sql = `
     INSERT INTO Passes (userId, zoneId, reason, validUntil, issuerName, comment, createdAt)
-    VALUES (${Number(dto.userId)}, ${Number(dto.zoneId)}, '${escapeSql(dto.reason)}', '${escapeSql(dto.validUntil)}', '${escapeSql(dto.issuerName)}', '${escapeSql(dto.comment ?? "")}', '${now}');
+    VALUES (?, ?, ?, ?, ?, ?, ?);
   `;
-  const result = await run(sql);
+  const params = [
+    Number(dto.userId),
+    Number(dto.zoneId),
+    dto.reason,
+    dto.validUntil,
+    dto.issuerName,
+    dto.comment ?? "",
+    now,
+  ];
+  const result = await run(sql, params);
   return await getById(result.lastID);
 }
 
-export async function update(id: number | string, dto: UpdatePassDto): Promise<Pass | undefined | null> {
-  const updates: string[] = [];
-  if (dto.userId !== undefined) updates.push(`userId = ${Number(dto.userId)}`);
-  if (dto.zoneId !== undefined) updates.push(`zoneId = ${Number(dto.zoneId)}`);
-  if (dto.reason !== undefined) updates.push(`reason = '${escapeSql(dto.reason)}'`);
-  if (dto.validUntil !== undefined) updates.push(`validUntil = '${escapeSql(dto.validUntil)}'`);
-  if (dto.issuerName !== undefined) updates.push(`issuerName = '${escapeSql(dto.issuerName)}'`);
-  if (dto.comment !== undefined) updates.push(`comment = '${escapeSql(dto.comment)}'`);
+export async function update(
+  id: number | string,
+  dto: UpdatePassDto,
+  ownerUserId?: number
+): Promise<Pass | undefined | null> {
+  const setClauses: string[] = [];
+  const params: unknown[] = [];
 
-  if (updates.length === 0) return await getById(id);
+  if (dto.userId !== undefined) { setClauses.push(`userId = ?`); params.push(Number(dto.userId)); }
+  if (dto.zoneId !== undefined) { setClauses.push(`zoneId = ?`); params.push(Number(dto.zoneId)); }
+  if (dto.reason !== undefined) { setClauses.push(`reason = ?`); params.push(dto.reason); }
+  if (dto.validUntil !== undefined) { setClauses.push(`validUntil = ?`); params.push(dto.validUntil); }
+  if (dto.issuerName !== undefined) { setClauses.push(`issuerName = ?`); params.push(dto.issuerName); }
+  if (dto.comment !== undefined) { setClauses.push(`comment = ?`); params.push(dto.comment); }
 
-  const result = await run(
-    `UPDATE Passes SET ${updates.join(", ")} WHERE id = ${Number(id)};`
-  );
+  if (setClauses.length === 0) return await getById(id);
+
+  params.push(Number(id));
+
+  let sql = `UPDATE Passes SET ${setClauses.join(", ")} WHERE id = ?`;
+  if (ownerUserId !== undefined) {
+    sql += ` AND userId = ?`;
+    params.push(ownerUserId);
+  }
+  sql += `;`;
+
+  const result = await run(sql, params);
   if (result.changes === 0) return null;
   return await getById(id);
 }
 
-export async function remove(id: number | string): Promise<boolean> {
-  const result = await run(`DELETE FROM Passes WHERE id = ${Number(id)};`);
+export async function remove(id: number | string, ownerUserId?: number): Promise<boolean> {
+  let sql = `DELETE FROM Passes WHERE id = ?`;
+  const params: unknown[] = [Number(id)];
+
+  if (ownerUserId !== undefined) {
+    sql += ` AND userId = ?`;
+    params.push(ownerUserId);
+  }
+  sql += `;`;
+
+  const result = await run(sql, params);
   return result.changes > 0;
 }
 
@@ -128,15 +165,27 @@ export async function getTopStudentsByReason(): Promise<TopStudentByReason[]> {
   return await all<TopStudentByReason>(sql);
 }
 
+// export async function searchByIssuer(q: string): Promise<Pass[]> {
+//   const sql = `
+//     SELECT p.*, u.fullName as studentName, z.name as zoneName
+//     FROM Passes p
+//     JOIN Users u ON p.userId = u.id
+//     JOIN Zones z ON p.zoneId = z.id
+//     WHERE p.issuerName LIKE '%${q}%'
+//     ORDER BY p.id DESC LIMIT 50;
+//   `;
+//   return await all<Pass>(sql);
+// }
+
 export async function searchByIssuer(q: string): Promise<Pass[]> {
   const sql = `
     SELECT p.*, u.fullName as studentName, z.name as zoneName
     FROM Passes p
     JOIN Users u ON p.userId = u.id
     JOIN Zones z ON p.zoneId = z.id
-    WHERE p.issuerName LIKE '%${q}%'
+    WHERE p.issuerName LIKE ?
     ORDER BY p.id DESC
     LIMIT 50;
   `;
-  return await all<Pass>(sql);
+  return await all<Pass>(sql, [`%${q}%`]);
 }

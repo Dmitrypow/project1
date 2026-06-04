@@ -13,9 +13,16 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(requestLogger);
 
+app.use((_req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Referrer-Policy", "no-referrer");
+  next();
+});
+
 const allowedOrigins = [
   "http://localhost:5500",
-  "http://127.0.0.1:5500"
+  "http://127.0.0.1:5500",
 ];
 
 app.use(cors({
@@ -25,7 +32,7 @@ app.use(cors({
     return cb(new Error("CORS: origin is not allowed"), false);
   },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  allowedHeaders: ["Content-Type", "Authorization", "X-Demo-UserId"],
 }));
 app.options("*", cors());
 

@@ -44,7 +44,8 @@ export async function update(req: Request, res: Response, next: NextFunction): P
     const errors = validateUpdatePassDto(req.body as Record<string, unknown>);
     if (errors.length > 0) throw new ApiError(400, "VALIDATION_ERROR", "Invalid request body", errors);
     const dto = parseUpdatePassDto(req.body as Record<string, unknown>);
-    const pass = await passesService.update(req.params.id, dto);
+    const ownerUserId = req.currentUser?.id;
+    const pass = await passesService.update(req.params.id, dto, ownerUserId);
     res.status(200).json(toPassResponseDto(pass));
   } catch (err) {
     next(err);
@@ -53,7 +54,8 @@ export async function update(req: Request, res: Response, next: NextFunction): P
 
 export async function remove(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    await passesService.remove(req.params.id);
+    const ownerUserId = req.currentUser?.id;
+    await passesService.remove(req.params.id, ownerUserId);
     res.status(204).send();
   } catch (err) {
     next(err);
@@ -63,7 +65,6 @@ export async function remove(req: Request, res: Response, next: NextFunction): P
 export async function getTopStudents(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const data = await passesService.getTopStudents();
-
     const grouped: Record<string, { rank: number; userId: number; studentName: string; passCount: number }[]> = {};
     for (const row of data) {
       if (!grouped[row.reason]) grouped[row.reason] = [];
@@ -74,7 +75,6 @@ export async function getTopStudents(req: Request, res: Response, next: NextFunc
         passCount: row.passCount,
       });
     }
-
     res.status(200).json({ data: grouped });
   } catch (err) {
     next(err);
@@ -94,7 +94,7 @@ export async function search(req: Request, res: Response, next: NextFunction): P
   try {
     const q = String(req.query.q ?? "");
     const passes = await passesService.search(q);
-    res.status(200).json({ items: passes, _warning: "⚠️ SQL Injection demo endpoint — not safe for production" });
+    res.status(200).json({ items: passes });
   } catch (err) {
     next(err);
   }

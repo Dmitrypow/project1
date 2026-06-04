@@ -25,9 +25,13 @@ export async function create(dto: CreatePassDto): Promise<Pass> {
   return pass;
 }
 
-export async function update(id: string, dto: UpdatePassDto): Promise<Pass> {
+export async function update(id: string, dto: UpdatePassDto, ownerUserId?: number): Promise<Pass> {
   const existing = await passesRepo.getById(id);
   if (!existing) throw new ApiError(404, "NOT_FOUND", `Pass with id "${id}" not found`);
+
+  if (ownerUserId !== undefined && existing.userId !== ownerUserId) {
+    throw new ApiError(404, "NOT_FOUND", `Pass with id "${id}" not found`);
+  }
 
   if (dto.validUntil) {
     const today = new Date().toISOString().slice(0, 10);
@@ -43,8 +47,15 @@ export async function update(id: string, dto: UpdatePassDto): Promise<Pass> {
   return updated;
 }
 
-export async function remove(id: string): Promise<void> {
-  const deleted = await passesRepo.remove(id);
+export async function remove(id: string, ownerUserId?: number): Promise<void> {
+  const existing = await passesRepo.getById(id);
+  if (!existing) throw new ApiError(404, "NOT_FOUND", `Pass with id "${id}" not found`);
+
+  if (ownerUserId !== undefined && existing.userId !== ownerUserId) {
+    throw new ApiError(404, "NOT_FOUND", `Pass with id "${id}" not found`);
+  }
+
+  const deleted = await passesRepo.remove(id, ownerUserId);
   if (!deleted) throw new ApiError(404, "NOT_FOUND", `Pass with id "${id}" not found`);
 }
 
